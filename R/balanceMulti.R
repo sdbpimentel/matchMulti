@@ -1,3 +1,7 @@
+
+# This is the balanceMulti function.
+
+
 balanceMulti <-
 function(match.obj, student.cov = NULL, school.cov = NULL){
 	if(is.null(match.obj)){
