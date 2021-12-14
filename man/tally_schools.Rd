@@ -2,7 +2,7 @@
 % Please edit documentation in R/matchMultiResult.R
 \name{tally_schools}
 \alias{tally_schools}
-\title{Tally number of schools in given dataset}
+\title{Tally schools and students in a given dataset}
 \usage{
 tally_schools(data, school.id, treatment)
 }
@@ -14,8 +14,15 @@ tally_schools(data, school.id, treatment)
 \item{treatment}{String name of the treatment variable.}
 }
 \value{
-List of three numbers, # control, # Tx, # Total
+List of two things: school and student counts (invisible).
 }
 \description{
-Tally number of schools in given dataset
+Returns a count of schools, without printing
+anything.
+}
+\seealso{
+describe_data_counts
+}
+\author{
+Luke Miratrix
 }

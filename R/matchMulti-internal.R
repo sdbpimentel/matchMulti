@@ -67,9 +67,10 @@ function(student.matches, school.match, school.id, treatment){
 	return(final.match)
 }
 
-## The original version of the following function was written by Paul Rosenbaum and distributed in the supplemental material to the paper: "Optimal Matching of an Optimally Chosen Subset in Observational Studies," Paul R. Rosenbaum, Journal of Computational and Graphical Statistics, Vol. 21, Iss. 1, 2012.
-elastic <-
-function (mdist, n = 0, val = 0) {
+#' @export
+#'
+#' @rdname pairmatchelastic
+elastic <- function (mdist, n = 0, val = 0) {
     st <- max(as.numeric(c(rownames(mdist), colnames(mdist))))
     h <- matrix(val, dim(mdist)[1], n)
     if(n > 0){
@@ -77,6 +78,9 @@ function (mdist, n = 0, val = 0) {
 	}
     cbind(mdist, h)
 }
+
+
+
 
 fisher.balance <-
 function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
@@ -426,38 +430,41 @@ function(students, treatment, school.id, match.students, student.vars, school.ca
 }
 
 
-## The original versions of the following function was written by Paul Rosenbaum and distributed in the supplemental material to the paper: "Optimal Matching of an Optimally Chosen Subset in Observational Studies," Paul R. Rosenbaum, Journal of Computational and Graphical Statistics, Vol. 21, Iss. 1, 2012.
+
 
 
 #' Optimal Subset Matching without Balance Constraints
-#' 
+#'
 #' Conducts optimal subset matching as described in the reference.
+#'
+#' \code{pairmatchelastic} is the main function, which conducts an entire match.
+#' \code{elastic} is a helper function which augments the original distance
+#' matrix as described in the reference. 
 #' 
-#' \code{pairmatchelastic} is the main function, which conducts an entire
-#' match.  \code{elastic} is a helper function which augments the original
-#' distance matrix as described in the reference. The original versions of
-#' these functions were written by Paul Rosenbaum and distributed in the
-#' supplemental material to the reference.
-#' 
-#' @aliases pairmatchelastic elastic
+#' The original versions of these functions were written by Paul Rosenbaum and
+#' distributed in the supplemental material to the paper: "Optimal Matching of
+#' an Optimally Chosen Subset in Observational Studies," Paul R. Rosenbaum,
+#' Journal of Computational and Graphical Statistics, Vol. 21, Iss. 1, 2012.
+#'
 #' @param mdist distance matrix with rows corresponding to treated units and
-#' columns corresponding to controls.
+#'   columns corresponding to controls.
 #' @param n maximum number of treated units that can be excluded.
 #' @param val cost of excluding a treated unit (i.e. we prefer to exclude a
-#' treated unit if it increases the total matched distance by more than
-#' \code{val}).
+#'   treated unit if it increases the total matched distance by more than
+#'   \code{val}).
 #' @return \code{elastic} returns an augmented version of the input matrix
-#' \code{mdist}.  \code{pairmatchelastic} returns a matrix of 1 column whose
-#' values are the column numbers of matched controls and whose rownames are the
-#' row numbers of matched treated units.
+#'   \code{mdist}.  \code{pairmatchelastic} returns a matrix of 1 column whose
+#'   values are the column numbers of matched controls and whose rownames are
+#'   the row numbers of matched treated units.
 #' @author Paul R. Rosenbaum (original forms), modifications by Luke Keele and
-#' Sam Pimentel
+#'   Sam Pimentel
+#'   
 #' @references Rosenbaum, Paul R. (2012) "Optimal Matching of an Optimally
-#' Chosen Subset in Observational Studies."  Journal of Computational and
-#' Graphical Statistics, 21.1, 57-71.
+#'   Chosen Subset in Observational Studies."  Journal of Computational and
+#'   Graphical Statistics, 21.1, 57-71.
+#'   
 #' @export pairmatchelastic
-pairmatchelastic <-
-function (mdist, n = 0, val = 0) {
+pairmatchelastic <- function (mdist, n = 0, val = 0) {
     ro <- dim(mdist)[1]
     co <- dim(mdist)[2]
     k <- ro + co

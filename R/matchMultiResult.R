@@ -43,13 +43,8 @@ format_fine_balance = function( school.fb ) {
 #'
 #' @export
 #' @param ... No extra options passed.
-#' @param n Number of lines of search path to print, max.
-#' @param header FALSE means skip some header info on the result, just print
-#'   the data.frame of actual results.
-#' @param search FALSE means don't print the search path for a result for
-#'   mdes or sample.
 #' @rdname matchMultiResult
-print.matchMultiResult = function( x, n = 10, ... ) {
+print.matchMultiResult = function( x, ... ) {
   cat( "Multilevel Match Result\n" )
   school.id = x$school.id
   treatment = x$treatment
@@ -117,11 +112,21 @@ summary.matchMultiResult = function( object, ... ) {
 }
 
 
-#' Tally number of schools in given dataset
+#' Tally schools and students in a given dataset
+#'
+#'  Returns a count of schools, without printing
+#' anything.
+#'
+#' @param data Dataset (student level)
+#' @param school.id String name of ID column in data (the grouping variable)
+#' @param treatment String name of the treatment variable.
+#'
+#' @seealso describe_data_counts
 #' 
-#' @inheritParams describe_data_counts
+#' @author Luke Miratrix
+#'
+#' @return List of two things: school and student counts (invisible).
 #' 
-#' @return List of three numbers, # control, # Tx, # Total
 #' @export
 tally_schools = function( data, school.id, treatment ) {
   labs = sort( unique( data[[treatment]] ) )
@@ -137,20 +142,18 @@ tally_schools = function( data, school.id, treatment ) {
 }
 
 
-#' Describe the count of students and schools
-#'
+#' Print out summary of student and school counts
+#' 
 #' Given a school ID and treatment variable, count up number of schools and
-#' students.
+#' students, print out a summary of the counts of students and
+#' schools.
 #' 
-#' @param data Dataset (student level)
-#' @param school.id String name of ID column in data (the grouping variable)
-#' @param treatment String name of the treatment variable.
+#' @seealso tally_schools
 #' 
-#' @return List of two things: school and student counts.
+#' @inheritParams  tally_schools
+#' @return List of three numbers, # control, # Tx, # Total
+#' 
 #' @export
-#' 
-#' @author Luke Miratrix
-#' 
 describe_data_counts = function( data, school.id, treatment ) {
   
   stopifnot( treatment %in% names(data) )

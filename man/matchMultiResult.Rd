@@ -9,7 +9,7 @@
 \usage{
 is.matchMultiResult(x)
 
-\method{print}{matchMultiResult}(x, n = 10, ...)
+\method{print}{matchMultiResult}(x, ...)
 
 \method{summary}{matchMultiResult}(object, ...)
 }
@@ -17,17 +17,9 @@ is.matchMultiResult(x)
 \item{x}{a matchMultiResult object (except for is.matchMultiResult, where it is a generic
 object to check).}
 
-\item{n}{Number of lines of search path to print, max.}
-
 \item{...}{Extra options passed to print.matchMultiResult}
 
 \item{object}{Object to summarize.}
-
-\item{header}{FALSE means skip some header info on the result, just print
-the data.frame of actual results.}
-
-\item{search}{FALSE means don't print the search path for a result for
-mdes or sample.}
 }
 \value{
 is.matchMultiResult: TRUE if object is a matchMultiResult object.

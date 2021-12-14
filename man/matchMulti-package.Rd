@@ -3,8 +3,7 @@
 \docType{package}
 \name{matchMulti-package}
 \alias{matchMulti-package}
-\title{c("\\Sexpr[results=rd,stage=build]{tools:::Rd_package_title(\"#1\")}",
-"matchMulti")\Sexpr{tools:::Rd_package_title("matchMulti")}}
+\title{matchMulti Package}
 \description{
 \code{matchMulti} provides and easy to use set of functions to do matching
 with multilevel data.  It is designed for use with grouped data such as
@@ -14,7 +13,7 @@ to control groups to make the two groups more comparable.
 \details{
 This package will match treated groups to control groups, but allows for
 trimming of both units and groups to increase balance.  There are also
-functions for assessing balance afer matching, estimating treatment effects
+functions for assessing balance after matching, estimating treatment effects
 and performing sensitivity analysis for hidden confounders.
 }
 \examples{

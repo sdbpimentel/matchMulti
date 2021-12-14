@@ -65,8 +65,7 @@ NULL
 
 
 
-#' c("\\Sexpr[results=rd,stage=build]{tools:::Rd_package_title(\"#1\")}",
-#' "matchMulti")\Sexpr{tools:::Rd_package_title("matchMulti")}
+#' matchMulti Package
 #' 
 #' \code{matchMulti} provides and easy to use set of functions to do matching
 #' with multilevel data.  It is designed for use with grouped data such as
@@ -75,7 +74,7 @@ NULL
 #' 
 #' This package will match treated groups to control groups, but allows for
 #' trimming of both units and groups to increase balance.  There are also
-#' functions for assessing balance afer matching, estimating treatment effects
+#' functions for assessing balance after matching, estimating treatment effects
 #' and performing sensitivity analysis for hidden confounders.
 #' 
 #' @name matchMulti-package

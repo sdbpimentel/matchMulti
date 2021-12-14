@@ -2,7 +2,7 @@
 % Please edit documentation in R/matchMultiResult.R
 \name{describe_data_counts}
 \alias{describe_data_counts}
-\title{Describe the count of students and schools}
+\title{Print out summary of student and school counts}
 \usage{
 describe_data_counts(data, school.id, treatment)
 }
@@ -14,12 +14,13 @@ describe_data_counts(data, school.id, treatment)
 \item{treatment}{String name of the treatment variable.}
 }
 \value{
-List of two things: school and student counts.
+List of three numbers, # control, # Tx, # Total
 }
 \description{
 Given a school ID and treatment variable, count up number of schools and
-students.
+students, print out a summary of the counts of students and
+schools.
 }
-\author{
-Luke Miratrix
+\seealso{
+tally_schools
 }
