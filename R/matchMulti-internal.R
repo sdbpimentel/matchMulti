@@ -1,9 +1,53 @@
+#' Extract School-Level Covariates
+#' 
+#' Given a vector of variables of interest for students in a single school,
+#' extracts a single value for the school
+#' 
+#' If the input is numeric, \code{agg} returns the mean; if the input is not
+#' numeric, an error will be thrown unless all values are the same, in which
+#' case the single unique value will be returned.
+#' 
+#' @param x a vector containing student-level observations for a school. If it
+#' is a factor it must contain only a single level.
+#' @return A single value of the same type as the input vector.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export agg
 agg <-
 function(x){
 	if(length(unique(x)) == 1) return(x[1])
 	return(mean(x, na.rm = TRUE))	
 }
 
+
+
+#' Collect Matched Samples
+#' 
+#' After students and schools have both been matched separately, assembles the
+#' matched student samples corresponding to the school match into a single
+#' dataframe of student-level data.
+#' 
+#' 
+#' @param student.matches a list of lists object produced by
+#' \code{matchStudents}, with each element of the second list containing a
+#' dataframe composed of a matched sample for a different treated-control
+#' school pairing.
+#' @param school.match a dataframe, produced by \code{matchSchools}, with two
+#' columns, one containing treated school IDs and the other containing matched
+#' control school IDs.
+#' @param school.id the name of the column storing the unique school identifier
+#' (in the dataframes stored in \code{student.matches})
+#' @param treatment the name of the column storing the binary treatment status
+#' indicator (in the dataframes stored in \code{student.matches})
+#' @return a dataframe containing the full set of matched samples for the
+#' multilevel match.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export assembleMatch
 assembleMatch <-
 function(student.matches, school.match, school.id, treatment){
 	#school.match <- school.match.list$matches[,1,drop = FALSE]
@@ -68,18 +112,43 @@ function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctr
 }
 
 
+
+
+#' Handle Missing Values
+#' 
+#' Preprocesses a dataframe of matching covariates so the Mahalanobis distance
+#' can be calculated.
+#' 
+#' Preprocessing involves three main steps: (1) converting factors to matrices
+#' of dummy variables (2) for any variable with NAs, adding an additional
+#' binary variable indicating whether it is missing (3) imputing all NAs with
+#' the column mean.  This follows the recommendations of Rosenbaum in section
+#' 9.4 of the referenced text.
+#' 
+#' @param X a matrix or dataframe of covariates to be used for matching
+#' @param verbose logical value indicating whether detailed output should be
+#' provided.
+#' @return a matrix containing the preprocessed data.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @references Rosenbaum, Paul R. (2010). \emph{Design of Observational
+#' Studies}.  Springer-Verlag.
+#' @keywords internal
+#' @importFrom plyr laply
+#' @export handleNA
 handleNA <-
 function(X, verbose = FALSE){
 	if (is.data.frame(X)) {
-        X.chars <- which(laply(X, class) == "character")
+        X.chars <- which(plyr::laply(X, class) == "character")
         if (verbose && length(X.chars) > 0) {
             print("character variables found in X, converting to factors")
             for (i in X.chars) {
                 X[, i] <- factor(X[, i])
             }
         }
-        X.factors <- which(laply(X, class) == "factor")
-        for (i in which(laply(X, function(x) any(is.na(x))))) {
+        X.factors <- which(plyr::laply(X, class) == "factor")
+        for (i in which(plyr::laply(X, function(x) any(is.na(x))))) {
 			if (verbose) print(paste('Missing values found in variable ', colnames(X)[i] ,'; imputing and adding missingness indicator'))        	
             if (i %in% X.factors) {
                 X[, i] <- addNA(X[, i])
@@ -109,6 +178,22 @@ function(X, verbose = FALSE){
 }
 
 
+
+
+#' Check if a variable is binary
+#' 
+#' Examines a vector that is not coded as a logical to see if it contains only
+#' 0s and 1s.
+#' 
+#' 
+#' @param x A vector.
+#' @return a logical value, \code{TRUE} if the vector contains only 0s and 1s
+#' and \code{FALSE} otherwise.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export is.binary
 is.binary <-
 function(x){
 	if (max(x) != 1 || min(x) != 0) return(FALSE)
@@ -122,6 +207,37 @@ function(x){
 }
 
 
+
+
+#' Compute School Distance from a Student Match
+#' 
+#' Defines a distance between two schools whose students have been matched
+#' based on the size of the resulting matched sample and on the student-level
+#' covariate balance.
+#' 
+#' The distance is computed by (1) subtracting the harmonic mean of the treated
+#' and control counts in the matched sample from \code{largeval} (2) adding
+#' \code{largeval} for each covariate among \code{studentvars} that has an
+#' absolute standardized difference exceeding 0.2.  This encourages the school
+#' match to choose larger schools with better balance.
+#' 
+#' @param matchFrame dataframe containing all matched students.
+#' @param treatFrame dataframe containing all students from the treated school.
+#' @param ctrlFrame dataframe containing all students from the control school.
+#' @param student.vars names of variables on which to evaluate balance in the
+#' matched sample.  Must be present in the column names of each of
+#' \code{matchFrame}, \code{treatFrame} and \code{ctrlFrame}.
+#' @param treatment name of the treatment variable. Must be present in the
+#' column names of each of \code{matchFrame}, \code{treatFrame} and
+#' \code{ctrlFrame}.
+#' @param largeval a large penalty value to be added to the distance for each
+#' student-level imbalance.
+#' @return a numeric distance.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export match2distance
 match2distance <-
 function(matchFrame, treatFrame, ctrlFrame, student.vars, treatment, largeval){
 	treat.v <- matchFrame[[treatment]]
@@ -136,6 +252,48 @@ function(matchFrame, treatFrame, ctrlFrame, student.vars, treatment, largeval){
 	}
 }
 
+
+
+#' Match Schools on Student-based Distance
+#' 
+#' Takes in a school distance matrix created using information from the
+#' first-stage student match and matches schools optimally, potentially
+#' 
+#' The \code{school.fb} argument encodes a refined covariate balance
+#' constraint: the matching algorithm optimally balances the interaction of the
+#' variables in the first list element, then attempts to further balance the
+#' interaction in the second element, and so on.  As such variables should be
+#' added in order of priority for balance.
+#' 
+#' @param dmat a distance matrix for schools, with a row for each treated
+#' school and a column for each control school.
+#' @param students a dataframe containing student and school covariates, with a
+#' different row for each student.
+#' @param treatment the column name of the binary treatment status indicator in
+#' the \code{students} dataframe.
+#' @param school.id the column name of the unique school ID in the
+#' \code{students} dataframe.
+#' @param school.fb an optional list of character vectors, each containing a
+#' subset of the column names of \code{students}.  Each element of the list
+#' should contain all the names in previous elements (producing a nested
+#' structure).
+#' @param penalty a numeric value, treated as the cost to the objective
+#' function of excluding a treated school.  If it is set lower, more schools
+#' will be excluded.
+#' @param verbose a logical value indicating whether detailed output should be
+#' printed.
+#' @param tol a numeric tolerance value for comparing distances.  It may need
+#' to be raised above the default when matching with many levels of refined
+#' balance.
+#' @return a dataframe with two columns, one containing treated school IDs and
+#' the other containing matched control school IDs.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @importFrom plyr ddply
+#' @importFrom rcbsubset rcbsubset
+#' @keywords internal
+#' @export matchSchools
 matchSchools <-
 function(dmat, students, treatment, school.id,
  school.fb, penalty, verbose, tol){
@@ -149,10 +307,10 @@ function(dmat, students, treatment, school.id,
 	if (any(is.na(reord))) stop('matchSchools found schools not handled by matchStudents')
 	school.df <- school.df[reord,,drop = FALSE]
 	if(is.null(school.fb)){
-		match.out <- rcbsubset(dmat,
+		match.out <- rcbsubset::rcbsubset(dmat,
 		                       exclude.penalty = penalty, tol = tol) #	DIST_TOLERANCE)
 	} else {
-		match.out <- rcbsubset(dmat, fb.list = school.fb, 
+		match.out <- rcbsubset::rcbsubset(dmat, fb.list = school.fb, 
 		                       treated.info = school.df[school.df[[treatment]] == 1,
 		                                                ,drop = FALSE], 
 		                       control.info = school.df[school.df[[treatment]] == 0,
@@ -167,6 +325,55 @@ function(dmat, students, treatment, school.id,
 #NB: when empty matches are formed between students, an NA goes into the distance
 #matrix.  This works fine downstream because rcbsubset trims out NAs from
 #distance matrix as forbidden matches because they are not finite.
+
+
+#' Compute Student Matches for all Pairs of Schools
+#' 
+#' Iterates over all possible treated-control school pairs, optionally computes
+#' and stores an optimal student match for each one, and generates a distance
+#' matrix for schools based on the quality of each student match.
+#' 
+#' The \code{penalty.qtile} and \code{min.keep.pctg} control the rate at which
+#' students are trimmed from the match.  If the quantile is high enough no
+#' students should be excluded in any match; if the quantile is very low the
+#' \code{min.keep.pctg} can still ensure a minimal sample size in each match.
+#' 
+#' @param students a dataframe containing student covariates, with a different
+#' row for each student.
+#' @param treatment the column name of the binary treatment status indicator in
+#' the \code{students} dataframe.
+#' @param school.id the column name of the unique school ID in the
+#' \code{students} dataframe.
+#' @param match.students logical value.  If \code{TRUE}, students are matched
+#' within school pairs and some students will be excluded.  If \code{FALSE},
+#' all students will be retained in the matched sample for each school pair.
+#' @param student.vars column names of variables in \code{students} on which to
+#' match students and assess balance of student matches in evaluating match
+#' quality.
+#' @param school.caliper matrix with one row for each treated school and one
+#' column for each control school, containing zeroes for pairings allowed by
+#' the caliper and \code{Inf} values for forbidden pairings.  When \code{NULL}
+#' no caliper is imposed.
+#' @param verbose a logical value indicating whether detailed output should be
+#' printed.
+#' @param penalty.qtile a numeric value between 0 and 1 specifying a quantile
+#' of the distribution of all student-student matching distances.  The
+#' algorithm will prefer to exclude treated students rather than form pairs
+#' with distances exceeding this quantile.
+#' @param min.keep.pctg a minimum percentage of students in the smaller school
+#' in a pair which must be retained, even when treated students are excluded.
+#' @return A list with two elements: \item{student.matches}{ a list with one
+#' element for each treated school.  Each element is a list with one element
+#' for each control school, and each element of these secondary lists is a
+#' dataframe containing the matched sample for the corresponding
+#' treated-control pairing. } \item{schools.matrix}{ a matrix with one row for
+#' each treated school and one column for each control school, giving matching
+#' distances based on the student match. }
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export matchStudents
 matchStudents <-
 function(students, treatment, school.id, match.students, student.vars, school.caliper = NULL, verbose, penalty.qtile, min.keep.pctg){	
 	if(match.students){
@@ -220,13 +427,42 @@ function(students, treatment, school.id, match.students, student.vars, school.ca
 
 
 ## The original versions of the following function was written by Paul Rosenbaum and distributed in the supplemental material to the paper: "Optimal Matching of an Optimally Chosen Subset in Observational Studies," Paul R. Rosenbaum, Journal of Computational and Graphical Statistics, Vol. 21, Iss. 1, 2012.
+
+
+#' Optimal Subset Matching without Balance Constraints
+#' 
+#' Conducts optimal subset matching as described in the reference.
+#' 
+#' \code{pairmatchelastic} is the main function, which conducts an entire
+#' match.  \code{elastic} is a helper function which augments the original
+#' distance matrix as described in the reference. The original versions of
+#' these functions were written by Paul Rosenbaum and distributed in the
+#' supplemental material to the reference.
+#' 
+#' @aliases pairmatchelastic elastic
+#' @param mdist distance matrix with rows corresponding to treated units and
+#' columns corresponding to controls.
+#' @param n maximum number of treated units that can be excluded.
+#' @param val cost of excluding a treated unit (i.e. we prefer to exclude a
+#' treated unit if it increases the total matched distance by more than
+#' \code{val}).
+#' @return \code{elastic} returns an augmented version of the input matrix
+#' \code{mdist}.  \code{pairmatchelastic} returns a matrix of 1 column whose
+#' values are the column numbers of matched controls and whose rownames are the
+#' row numbers of matched treated units.
+#' @author Paul R. Rosenbaum (original forms), modifications by Luke Keele and
+#' Sam Pimentel
+#' @references Rosenbaum, Paul R. (2012) "Optimal Matching of an Optimally
+#' Chosen Subset in Observational Studies."  Journal of Computational and
+#' Graphical Statistics, 21.1, 57-71.
+#' @export pairmatchelastic
 pairmatchelastic <-
 function (mdist, n = 0, val = 0) {
     ro <- dim(mdist)[1]
     co <- dim(mdist)[2]
     k <- ro + co
     mdist <- elastic(mdist, n = n, val = val)
-    m <- rcbsubset(mdist)
+    m <- rcbsubset::rcbsubset(mdist)
 	if(is.null(m)) return(NULL)
 	mt <- m
 	mt$matches <- m$matches[which(m$matches <= co),,drop=FALSE]
@@ -234,6 +470,23 @@ function (mdist, n = 0, val = 0) {
 }
 
 
+
+
+#' Ensure Dataframes Share Same Set Columns
+#' 
+#' Takes in two dataframes.  For each column name that is in the second frame
+#' but not in the first frame, a new column of zeroes is added to the first
+#' frame.
+#' 
+#' 
+#' @param df1 a dataframe.
+#' @param df2 a dataframe.
+#' @return a dataframe
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @export resolve.cols
 resolve.cols <-
 function(df1, df2){
 	new.cols <- setdiff(colnames(df2), colnames(df1))
@@ -243,8 +496,53 @@ function(df1, df2){
 	df1
 }
 
+
+
+#' Balance Measures
+#'
+#' Balance assessment for individual variables, before and after matching
+#'
+#' The \code{sdiff} function computes the standardized difference in means. The
+#' other functions perform different kinds of balance tests: \code{t.balance}
+#' does the 2-sample t-test, \code{fisher.balance} does Fisher's exact test for
+#' binary variable, and \code{wilc.balance} does Wilcoxon's signed rank test.
+#'
+#' @aliases sdiff ttest.balance fisher.balance wilc.balance
+#' @param varname name of the variable on which to test balance
+#' @param treatment name of the binary indicator for treatment status
+#' @param orig.data a data frame containing the data before matching
+#' @param match.data an optional data frame containing the matched sample
+#' @param treat.wts optional weights for treated units in the original sample
+#' @param ctrl.wts optional weights for control units in the original sample
+#' @param mt.wts optional weights for treated units in the matched sample
+#' @param mc.wts optional weights for treated units in the matched sample
+#'
+#' @return a labeled vector.  For \code{sdiff}, the vector has six elements if
+#'   \code{match.data} is provided: treated and control means and standardized
+#'   differences before and after matching.  If \code{match.data} is not
+#'   provided, the vector has only the three elements corresponding to the
+#'   pre-match case.
+#'
+#'   For the other functions, if \code{match.data} is provided, the vector
+#'   contains p-values for the test before and after matching. Otherwise a
+#'   single p-value is given for the pre-match data.
+#'
+#' @importFrom weights wtd.t.test
+#' 
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#'
+#'   Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @references Rosenbaum, Paul R. (2002). \emph{Observational Studies}.
+#'   Springer-Verlag.
+#'
+#'   Rosenbaum, Paul R. (2010). \emph{Design of Observational Studies}.
+#'   Springer-Verlag.
+#' @keywords internal
+#' @importFrom Hmisc wtd.var
+#' @export sdiff
 sdiff <-
-function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
+function(varname, treatment, orig.data, match.data = NULL, 
+         treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
 	if(is.null(treat.wts)) treat.wts = rep(1, sum(orig.data[[treatment]]))
 	if(is.null(ctrl.wts)) ctrl.wts = rep(1, sum(orig.data[[treatment]] == 0))	
 		
@@ -278,6 +576,30 @@ function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctr
 }
 
 ## The original version of the following function was written by Paul Rosenbaum and distributed in the supplemental material to the paper: "Optimal Matching of an Optimally Chosen Subset in Observational Studies," Paul R. Rosenbaum, Journal of Computational and Graphical Statistics, Vol. 21, Iss. 1, 2012.
+
+
+#' Robust Mahalanobis Distance
+#' 
+#' Computes robust Mahalanobis distance between treated and control units.
+#' 
+#' For an explanation of the robust Mahalanobis distance, see section 8.3 of
+#' the first reference.  This function was written by Paul Rosenbaum and
+#' distributed in the supplemental material to the second reference.
+#' 
+#' @param z vector of treatment indicators (1 for treated, 0 for controls).
+#' @param X matrix of numeric variables to be used for computing the
+#' Mahalanobis distance.  Row count must match length of \code{z}.
+#' @return a matrix of robust Mahalanobis distances, with a row for each
+#' treated unit and a column for each control.
+#' @author Paul R. Rosenbaum.
+#' @references Rosenbaum, Paul R. (2010). \emph{Design of Observational
+#' Studies}.  Springer-Verlag.
+#' 
+#' Rosenbaum, Paul R. (2012) "Optimal Matching of an Optimally Chosen Subset in
+#' Observational Studies."  Journal of Computational and Graphical Statistics,
+#' 21.1, 57-71.
+#' @keywords internal
+#' @export smahal
 smahal <-
 function(z,X){
     X<-as.matrix(X)
@@ -301,10 +623,35 @@ function(z,X){
 }
 
 
+
+
+#' Aggregate Student Data into School Data
+#' 
+#' Takes a dataframe of student-level covariates and aggregates selected
+#' columns into a dataframe of school covariates.
+#' 
+#' Aggregation is either done by taking averages or by selecting the unique
+#' factor value when a school has only one value for a factor.  As a result,
+#' \code{school.covs} should only include variables that are numeric or do not
+#' vary within schools.
+#' 
+#' @param students a dataframe of students.
+#' @param school.cov a character vector of column names in \code{students} that
+#' should be aggregated by school.
+#' @param school.id the name of the column in \code{students} containing the
+#' unique school identifier.
+#' @return a dataframe of aggregated data, with one row for each school and
+#' columns in \code{school.covs} and \code{school.id}.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @keywords internal
+#' @importFrom plyr ddply colwise
+#' @export students2schools
 students2schools <-
 function(students, school.cov, school.id){
 	school.df <- students[c(school.id, school.cov)]
-	school.df <- ddply(school.df, school.id, colwise(agg))
+	school.df <- plyr::ddply(school.df, school.id, plyr::colwise(agg))
 	school.df	
 }
 
@@ -318,9 +665,11 @@ function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctr
 	ctrl.wts <- ctrl.wts/sum(ctrl.wts)*length(ctrl.wts)
 	orig.v <- orig.data[,which(colnames(orig.data) == varname)]
 	
-	t.orig <- wtd.t.test(orig.v[orig.data[[treatment]] == 1], orig.v[orig.data[[treatment]] == 0], weight = treat.wts, weighty = ctrl.wts, samedata = FALSE)
+	t.orig <- weights::wtd.t.test(orig.v[orig.data[[treatment]] == 1], 
+	                              orig.v[orig.data[[treatment]] == 0], 
+	                              weight = treat.wts, weighty = ctrl.wts, samedata = FALSE)
 	
-	if(is.null(match.data)) return(c('T-test Pvalue' = t.orig$coefficients[3]))
+	if(is.null(match.data)) return(c('T-test Pvalue' = t.orig$coefficients[[3]]))
 
 	if(is.null(mc.wts)) mc.wts = rep(1, sum(match.data[[treatment]] == 0))
 	if(is.null(mt.wts)) mt.wts = rep(1, sum(match.data[[treatment]] == 1))
@@ -328,13 +677,17 @@ function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctr
 	mc.wts <- mc.wts/sum(mc.wts)*length(mc.wts)
 	match.v  <- match.data[,which(colnames(match.data) == varname)]	
 	
-	t.match <- wtd.t.test(match.v[match.data[[treatment]] == 1], match.v[match.data[[treatment]] == 0], weight = mt.wts, weighty = mc.wts, samedata = FALSE)
+	t.match <- weights::wtd.t.test(match.v[match.data[[treatment]] == 1], 
+	                               match.v[match.data[[treatment]] == 0], 
+	                               weight = mt.wts, weighty = mc.wts, samedata = FALSE)
 	
-	return(c('T-test Before' = t.orig$coefficients[3], 'T-test After' = t.match$coefficients[3]))
+	return(c('T-test Before' = t.orig$coefficients[[3]], 'T-test After' = t.match$coefficients[[3]]))
 }
 
 
-wilc.balance  <- function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
+wilc.balance  <- function(varname, treatment, orig.data, match.data = NULL, 
+                          treat.wts = NULL, ctrl.wts = NULL, 
+                          mt.wts = NULL, mc.wts = NULL){
 	if(is.null(treat.wts)) treat.wts = rep(1, sum(orig.data[[treatment]]))
 	if(is.null(ctrl.wts)) ctrl.wts = rep(1, sum(orig.data[[treatment]] == 0))	
 		
@@ -342,7 +695,8 @@ wilc.balance  <- function(varname, treatment, orig.data, match.data = NULL, trea
 	ctrl.wts <- ctrl.wts/sum(ctrl.wts)*length(ctrl.wts)
 	orig.v <- orig.data[,which(colnames(orig.data) == varname)]
 	
-	t.orig <- wilcox_test(y ~ z, data = data.frame('y' = orig.v, 'z' = factor(orig.data[[treatment]]))) #can add weights
+	t.orig <- wilcox_test(y ~ z, data = data.frame('y' = orig.v, 
+	                                               'z' = factor(orig.data[[treatment]]))) #can add weights
 #	t.orig <- wilcox.test(orig.v[orig.data[[treatment]] == 1], orig.v[orig.data[[treatment]] == 0], exact = FALSE)	
 	
 	if(is.null(match.data)) return(c('Wilcoxon Test Pvalue' = pvalue(t.orig)))
@@ -363,6 +717,32 @@ wilc.balance  <- function(varname, treatment, orig.data, match.data = NULL, trea
 }
 
 
+
+
+#' Outcome analysis.
+#' 
+#' Calculates confidence interval via grid search.
+#' 
+#' 
+#' @param beta Confidence interval value
+#' @param obj a multiMatch object
+#' @param out.name Name of outcome covariate
+#' @param schl_id_name Name of school (group) identifier
+#' @param treat.name Name of treatment indicator
+#' @param alpha Level of test for confidence interval, default is .05 for 95\%
+#' CI.
+#' @param alternative Direction of test.
+#' @return The endpoint of an estimated confidence interval.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @references Rosenbaum, Paul R. (2002). \emph{Observational Studies}.
+#' Springer-Verlag.
+#' 
+#' Rosenbaum, Paul R. (2010). \emph{Design of Observational Studies}.
+#' Springer-Verlag.
+#' @keywords internal
+#' @export ci_func
 ci_func <- function(beta, obj, out.name = NULL, schl_id_name = NULL, treat.name = NULL, alpha, alternative="less"){
 	 match.data <- obj$matched
      #No of Strata
@@ -397,6 +777,29 @@ ci_func <- function(beta, obj, out.name = NULL, schl_id_name = NULL, treat.name 
      pval - alpha
 }
 
+
+
+#' Outcome analysis.
+#' 
+#' Calculates Hodges-Lehmann point estimate for treatment effect.
+#' 
+#' 
+#' @param beta Point estimate value
+#' @param obj A multiMatch object
+#' @param out.name Name of outcome covariate
+#' @param schl_id_name Name of school (group) identifier
+#' @param treat.name Name of treatment indicator
+#' @return A point estimate for constant-additive treatment effect.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @references Rosenbaum, Paul R. (2002). \emph{Observational Studies}.
+#' Springer-Verlag.
+#' 
+#' Rosenbaum, Paul R. (2010). \emph{Design of Observational Studies}.
+#' Springer-Verlag.
+#' @keywords internal
+#' @export pe_func
 pe_func <- function(beta, obj, out.name = NULL, schl_id_name = NULL, treat.name = NULL){
 	 match.data <- obj$matched
      #No of Strata
@@ -426,6 +829,29 @@ pe_func <- function(beta, obj, out.name = NULL, schl_id_name = NULL, treat.name 
      E.T - 0
      }
 
+
+
+#' Outcome analysis.
+#' 
+#' Calcualtes p-values for test of sharp null for treatment effect.
+#' 
+#' 
+#' @param obj A multiMatch object
+#' @param out.name Name of outcome covariate
+#' @param schl_id_name Name of school (group) identifier
+#' @param treat.name Name of treatment indicator
+#' @param wt Logical flag for whether p-value should weight strata by size.
+#' @return A p-value for constant-additive treatment effect.
+#' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
+#' 
+#' Sam Pimentel, University of Pennsylvania, \email{spi@@wharton.upenn.edu}
+#' @references Rosenbaum, Paul R. (2002). \emph{Observational Studies}.
+#' Springer-Verlag.
+#' 
+#' Rosenbaum, Paul R. (2010). \emph{Design of Observational Studies}.
+#' Springer-Verlag.
+#' @keywords internal
+#' @export pval_func
 pval_func <- function(obj, out.name = NULL, schl_id_name = NULL, treat.name = NULL, wt=TRUE){
 	 match.data <- obj$matched
      #No of Strata

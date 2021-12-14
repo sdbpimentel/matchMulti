@@ -11,4 +11,4 @@ Imports: rcbsubset (>= 1.1.4), plyr, coin, weights, mvtnorm, MASS,Hmisc
 Suggests: optmatch, testthat, knitr
 License: MIT + file LICENSE
 VignetteBuilder: knitr
-
+RoxygenNote: 7.1.2

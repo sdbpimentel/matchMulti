@@ -1,5 +1,9 @@
-library(matchMulti)
-context("test-multilevel.R")
+# library(matchMulti)
+# library(Hmisc)
+# library( testthat )
+
+context("general testing")
+
 
 data(catholic_schools)
 # Trim data to speed up example
@@ -19,8 +23,10 @@ match.simple <- matchMulti(catholic_schools, treatment = 'sector',
                              student.vars = student.cov, verbose=TRUE, tol=.01)
 
 #Check balance after matching - this checks both student and school balance
-balanceMulti(match.simple, student.cov = student.cov)
+bM <- balanceMulti(match.simple, student.cov = student.cov)
 
+expect_true( is.list( bM ) )
+expect_true( !is.null( bM$students ) )
 
 
 
@@ -28,11 +34,32 @@ balanceMulti(match.simple, student.cov = student.cov)
 student.cov <- c('minority','female','ses')
 
 # Check balance student balance before matching
-balanceTable(catholic_schools[c(student.cov,'sector')],  treatment = 'sector')
+bT <- balanceTable(catholic_schools[c(student.cov,'sector')],  treatment = 'sector')
+bT
+expect_equal( dim(bT), c(3,3) )
+
 
 #Match schools but not students within schools
 match.simple <- matchMulti(catholic_schools, treatment = 'sector',
-school.id = 'school', match.students = FALSE)
+                           school.id = 'school', match.students = FALSE)
+
+
+
+
+# Does school.fb work?
+catholic_schools = dplyr::mutate( catholic_schools,
+                                  size_cut = cut( size, 2 ),
+                                  discrm_cut = cut( discrm, 2 ),
+                                  acad_cut = cut( acad, 3 ) )
+
+#table( catholic_schools$discrm_cut, catholic_schools$size_cut, catholic_schools$acad_cut )
+
+match.simple2 <- matchMulti(catholic_schools, treatment = 'sector',
+                           school.id = 'school', match.students = FALSE,
+                           school.fb = list( c( "size_cut" ), c( "discrm_cut", "acad_cut" ) ) )
+
+
+
 
 
 
@@ -52,10 +79,14 @@ save.first.stage = TRUE
 tol = 1e-3
 
 
+### Match on component pieces ####
 
-student.matches <- matchStudents(data, treatment, school.id, match.students, student.vars,  school.caliper, verbose, student.penalty.qtile, min.keep.pctg)
+student.matches <- matchStudents(data, treatment, school.id, match.students, 
+                                 student.vars,  school.caliper, verbose, student.penalty.qtile, 
+                                 min.keep.pctg)
 
-	school.match <- matchSchools(student.matches$schools.matrix, data, treatment, school.id, school.fb, school.penalty, verbose, tol = tol) 
+school.match <- matchSchools(student.matches$schools.matrix, data, treatment, school.id, 
+	                             school.fb, school.penalty, verbose, tol = tol) 
 	
 	
 dmat <- student.matches$schools.matrix
@@ -67,7 +98,21 @@ verbose = FALSE
 tol	<- 1e-3
 penalty <- NULL
 	
-		out.match <- assembleMatch(student.matches$student.matches, school.match, school.id, treatment)
+out.match <- assembleMatch(student.matches$student.matches, school.match, school.id, treatment)
 	
+expect_true( !is.null( out.match ) )
+expect_true( is.data.frame( out.match ) )
+
+
+
+
+
+#### Check sensitivity ####
+
+head( match.simple2$matched )
+
+sens <- matchMultisens(match.simple2, out.name = "mathach", schl_id_name = "school", treat.name = "sector", Gamma=1.5)
+
+expect_true( sens$pval > 0 )
 
 
