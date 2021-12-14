@@ -14,7 +14,7 @@ tally_schools(data, school.id, treatment)
 \item{treatment}{String name of the treatment variable.}
 }
 \value{
-List of two numbers, # control, # Tx
+List of three numbers, # control, # Tx, # Total
 }
 \description{
 Tally number of schools in given dataset
