@@ -4,60 +4,103 @@
 
 context("balance tables")
 
-data(catholic_schools)
+data(minischool)
 
-# Trim data to speed up example
-catholic_schools <- catholic_schools[catholic_schools$female_mean >.45 &
- catholic_schools$female_mean < .60,]
-nrow( catholic_schools )
-head( catholic_schools )
+
 
 student.cov <- c('mathach', 'minority', 'female')
 
 # Does school.fb work?
-catholic_schools = dplyr::mutate( catholic_schools,
+minischool = dplyr::mutate( minischool,
                                   size_cut = cut( size, 2 ),
                                   discrm_cut = cut( discrm, 2 ) )
 
-catholic_schools = dplyr::filter( catholic_schools, 
-                                  acad > quantile( acad, 0.25 ) & acad < quantile( acad, 0.75 ) )
+nrow( minischool )
+table(  minischool$sector, minischool$school  )
 
-nrow( catholic_schools )
-table(  catholic_schools$sector, catholic_schools$school  )
 
 school.fb <- c( "discrm_cut", "size_cut" )
 school.cov = c( "discrm", "size" )
 
-match.simpleA <- matchMulti(catholic_schools, treatment = 'sector',
+
+##### Check balance on raw data ######
+
+bt <- balanceTable( minischool, 
+                    treatment = "sector",
+                    school.id = "school",
+                    var.names = c( student.cov, school.cov ),
+                    include.tests = TRUE )
+bt
+
+
+
+btNt <- balanceTable( minischool, 
+                      treatment = "sector",
+                      var.names = c( student.cov, school.cov ),
+                      include.tests = FALSE )
+btNt
+
+expect_true( nrow( btNt ) == 5 )
+expect_true( all( btNt$`Treated Mean` == bt$`Treated Mean` ) )
+expect_true( all( btNt$`Control Mean` == bt$`Control Mean` ) )
+expect_true( all( btNt$SDiff == bt$SDiff ) )
+
+
+
+# Are we getting balance on categorical levels?
+btN <- balanceTable( minischool, 
+                     treatment = "sector",
+                     include.tests = FALSE )
+btN
+# We should see multiple discrm_cut and size_cuts 
+
+expect_true( nrow(btN) > ncol(minischool) )
+
+
+
+fakedbl = balanceTable( minischool, df.match=minischool, 
+                        treatment = "sector", school.id = "school", 
+                        var.names = c( "minority", "discrm_cut" ),
+                        include.tests = TRUE )
+fakedbl
+expect_true( all( fakedbl$`After Agg PValue` == fakedbl$`Before Agg PValue` ))
+
+
+
+##### Now do matching and check balance ######
+
+
+match.simpleA <- matchMulti(minischool, treatment = 'sector',
                             school.id = 'school', match.students = FALSE,
                             school.fb = school.fb )
 match.simpleA
 
 
+
 test_that( "balanceMulti works", {
-
-btab_split = balanceMulti( match.simpleA,
-                           school.cov = school.cov, 
-                           student.cov = student.cov )
-btab_split
-
-expect_true( nrow( btab_split$schools ) == 2 )
-expect_true( nrow( btab_split$students ) == 3 )
+  
+  btab_split = balanceMulti( match.simpleA,
+                             school.cov = school.cov, 
+                             student.cov = student.cov )
+  btab_split
+  
+  expect_true( nrow( btab_split$schools ) == 2 )
+  expect_true( nrow( btab_split$students ) == 3 )
 } )
 
 
 
 test_that( "single.table works", {
-
-btab = balanceMulti( match.simpleA, single.table = TRUE)
-btab
-
-btab2 = balanceMulti( match.simpleA, single.table = TRUE, include.tests = FALSE )
-btab2
-
-expect_equal( nrow(btab), nrow(btab2) )
-expect_equal( dim(btab2), c( 14, 6 ) )
-
+  
+  btab = balanceMulti( match.simpleA, single.table = TRUE)
+  btab
+  
+  btab2 = balanceMulti( match.simpleA, single.table = TRUE, include.tests = FALSE )
+  btab2
+  
+  expect_equal( nrow(btab), nrow(btab2) )
+  expect_equal( dim(btab2), c( 14, 6 ) )
+  
 } )
 
 

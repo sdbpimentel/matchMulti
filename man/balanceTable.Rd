@@ -8,6 +8,7 @@ balanceTable(
   df.orig,
   df.match = NULL,
   treatment,
+  school.id = NULL,
   var.names = NULL,
   treat.wts = NULL,
   ctrl.wts = NULL,
@@ -24,6 +25,9 @@ balanceTable(
 have all variable names to be balanced.}
 
 \item{treatment}{name of the binary indicator for treatment status}
+
+\item{school.id}{Identifier for groups (for example schools); need to pass if
+p-values for balance statistics are desired.}
 
 \item{var.names}{List of variable names to calculate balance for.  If NULL,
 use all variables found in the df.orig data.frame.}

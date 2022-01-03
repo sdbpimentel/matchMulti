@@ -63,6 +63,7 @@ balanceMulti <- function(match.obj, student.cov = NULL, school.cov = NULL,
 		return(NULL)
 	}
 	treatment <- match.obj$treatment
+	school.id <- match.obj$school.id
 	
 	# if no student covariates are provided, compute balance on all variables in
 	# dataset
@@ -76,9 +77,9 @@ balanceMulti <- function(match.obj, student.cov = NULL, school.cov = NULL,
 	                 school.vars = school.cov )
 	
 	#student balance
-	student.bal <- balanceTable(match.obj$raw[c(student.cov,treatment)], 
-	                            match.obj$matched[c(student.cov, treatment)], 
-	                            treatment,
+	student.bal <- balanceTable( df.orig = match.obj$raw[c(student.cov, school.id, treatment)], 
+	                            df.match = match.obj$matched[c(student.cov, school.id, treatment)], 
+	                            treatment, school.id,
 	                            include.tests = include.tests )
 	
 	#school balance
@@ -89,9 +90,9 @@ balanceMulti <- function(match.obj, student.cov = NULL, school.cov = NULL,
 		
 		id.idx <- which(colnames(schools.raw) == match.obj$school.id)
 	
-		school.bal <- balanceTable(schools.raw[-id.idx], 
-		                           schools.matched[-id.idx], 
-		                           treatment,
+		school.bal <- balanceTable(schools.raw, 
+		                           schools.matched, 
+		                           treatment, school.id,
 		                           include.tests = include.tests )
 	}
 	

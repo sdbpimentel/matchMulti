@@ -1,3 +1,60 @@
+
+
+balanceTable.internal <- function(data,
+                                  treatment, 
+                                  school.id = NULL,
+                                  var.names = NULL,
+                                  treat.wts = NULL, ctrl.wts = NULL, 
+                                  include.tests = FALSE,
+                                  verbose = FALSE) {
+  
+  vars = setdiff(colnames(data), treatment )
+  if ( !is.null( school.id ) ) {
+    vars = setdiff( vars, school.id )
+  }
+  
+  sdiff.out <- plyr::laply(vars, sdiff, 
+                           treatment = treatment, 
+                           orig.data = data, 
+                           treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
+                           .drop = FALSE)
+  rownames(sdiff.out) <- vars
+  
+  
+  #TODO: figure out whether to keep weight arguments and incorporate them or
+  #drop them
+  
+  if ( include.tests ) {
+    
+    t.test.out <- plyr::laply(vars, agg.balance, 
+                              treatment = treatment, 
+                              school.id = school.id,
+                              data = data, 
+                              treat.wts = treat.wts, ctrl.wts = ctrl.wts,
+                              .drop = FALSE)
+    rownames(t.test.out) <-  vars
+    colnames(t.test.out) <- "Agg PValue"
+    
+    CRVE.out <- plyr::laply(vars, CRVE.balance, 
+                            treatment = treatment, 
+                            school.id = school.id,
+                            data = data, 
+                            treat.wts = treat.wts, ctrl.wts = ctrl.wts,
+                            .drop = FALSE)
+    rownames(CRVE.out) <-  vars
+    colnames(CRVE.out) <- "CRVE PValue"
+    
+    out.tab <- cbind(sdiff.out, t.test.out, CRVE.out)
+    as.data.frame( out.tab )
+  } else {
+    as.data.frame( sdiff.out )
+  }
+}
+
+
+
+
+
 #' Create Balance Table
 #'
 #' Given an unmatched sample of treated and control units and (optionally) a
@@ -9,6 +66,8 @@
 #' @param df.match an optional data frame containing the matched sample. Must
 #'   have all variable names to be balanced.
 #' @param treatment name of the binary indicator for treatment status
+#' @param school.id Identifier for groups (for example schools); need to pass if
+#'   p-values for balance statistics are desired.
 #' @param var.names List of variable names to calculate balance for.  If NULL,
 #'   use all variables found in the df.orig data.frame.
 #' @param treat.wts optional weights for treated units in the original sample
@@ -38,9 +97,11 @@
 #' @export balanceTable
 balanceTable <- function(df.orig, df.match = NULL,
                          treatment, 
+                         school.id = NULL,
                          var.names = NULL,
                          #cat.vars = NULL,
-                         treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL, 
+                         treat.wts = NULL, ctrl.wts = NULL, 
+                         mt.wts = NULL, mc.wts = NULL, 
                          include.tests = FALSE,
                          verbose = FALSE){
   #if(is.null(cat.vars)) cat.vars <- rep(FALSE, ncol(df.orig))
@@ -59,7 +120,11 @@ balanceTable <- function(df.orig, df.match = NULL,
       stop( "Cannot have no variables to balance on. Set var.names to NULL to calc balance on everything." )
     }
     stopifnot( all( var.names %in% names(df.orig ) ) )
-    df.orig = df.orig[ c(treatment, var.names) ]
+    if ( !is.null( school.id ) ) {
+      df.orig = df.orig[ c(treatment, school.id, var.names) ]
+    } else {
+      df.orig = df.orig[ c(treatment, var.names) ]
+    }
   }
   
   
@@ -67,8 +132,8 @@ balanceTable <- function(df.orig, df.match = NULL,
   if(!is.null(df.match) ) {
     if ( ! all( colnames(df.orig) %in% colnames(df.match) ) ) {
       stop( 'df.match must have tx column and all columns selected for balance in df.orig')
-      df.match = df.match[ colnames(df.orig) ]
     }
+    df.match = df.match[ colnames(df.orig) ]
   }
   
   
@@ -90,66 +155,24 @@ balanceTable <- function(df.orig, df.match = NULL,
     cov.match <- NULL
   }
   
-  #search through and find all binaries.
-  binary.ind <- laply(cov.orig, is.binary)
-  treat.ind <- colnames(cov.orig) == treatment
-  
-  sdiff.out <- plyr::aaply(colnames(cov.orig)[which(!treat.ind)], 1, sdiff, 
-                           treatment = treatment, orig.data = cov.orig, match.data = cov.match, 
-                           treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
-                           mt.wts = mt.wts, mc.wts = mc.wts, .drop = FALSE)
-  rownames(sdiff.out) <- colnames(cov.orig)[which(!treat.ind)]
-  
-  #TODO: figure out whether to keep weight arguments and incorporate them or drop them
-  
-  if ( include.tests ) {
-    
-    t.test.out <- plyr::aaply(colnames(cov.orig)[which(!treat.ind)], 1, 
-                              ttest.balance, 
-                              treatment = treatment, orig.data = cov.orig, match.data = cov.match, 
-                              treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
-                              mt.wts = mt.wts, mc.wts = mc.wts, .drop = FALSE)
-    rownames(t.test.out) <-  colnames(cov.orig)[which(!treat.ind)]
-    
-    
-    if( any(!binary.ind)){
-      wilc.test.out <- plyr::aaply(colnames(cov.orig)[which(!binary.ind & !treat.ind)], 1, 
-                                   wilc.balance,
-                                   treatment = treatment, orig.data = cov.orig, match.data = cov.match, 
-                                   treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
-                                   mt.wts = mt.wts, mc.wts = mc.wts, .drop = FALSE)
-      rownames(wilc.test.out) <- colnames(cov.orig)[which(!binary.ind & !treat.ind)]
-    }
-    
-    if( any(binary.ind[-which(treat.ind)])){
-      fisher.test.out <- plyr::aaply(colnames(cov.orig)[which(binary.ind & !treat.ind)], 1, 
-                                     fisher.balance, 
-                                     treatment = treatment, 
-                                     orig.data = cov.orig, match.data = cov.match, 
+  main_table = balanceTable.internal(data = cov.orig,
+                                     treatment = treatment, school.id = school.id, var.names = var.names, 
                                      treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
-                                     mt.wts = mt.wts, mc.wts = mc.wts, .drop = FALSE) 
-      rownames(fisher.test.out) <- colnames(cov.orig)[which(binary.ind & !treat.ind)]
-    }
+                                     include.tests = include.tests, verbose = verbose )
+  
+  # Add in match balance if present.
+  if ( !is.null( df.match ) ) {
+    match_table = balanceTable.internal(data = cov.match,
+                                     treatment = treatment, school.id = school.id, var.names = var.names, 
+                                     treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
+                                     include.tests = include.tests, verbose = verbose )
     
-    if (all(binary.ind)){
-      test.out <- fisher.test.out
-    } else if (all(!binary.ind[-which(treat.ind)])) {
-      test.out <- wilc.test.out	
-    } else {
-      test.out <- as.data.frame(matrix(nrow = nrow(sdiff.out), ncol = ncol(fisher.test.out)))
-      rownames(test.out) <- rownames(sdiff.out)
-      if (ncol(test.out) == 2){
-        colnames(test.out) <- c('Fisher/Wilcox Pvalue Before', 'Fisher/Wilcox Pvalue After')
-      } else {
-        colnames(test.out) <- 'Fisher/Wilcox Pvalue'
-      }
-      test.out[which(rownames(sdiff.out) %in% rownames(fisher.test.out)),] <- fisher.test.out
-      test.out[which(rownames(sdiff.out) %in% rownames(wilc.test.out)),] <- wilc.test.out
-    }
-    
-    out.tab <- cbind(sdiff.out,t.test.out, test.out)
-    as.data.frame( out.tab )
-  } else {
-    as.data.frame( sdiff.out )
+    colnames(main_table) = paste0( "Before ", colnames(main_table) )
+    colnames(match_table) = paste0( "After ", colnames(match_table) )
+    main_table = cbind( main_table, match_table )
   }
+
+  return( main_table )
 }
+
+

@@ -32,4 +32,18 @@ scat = function( str, ... ) {
 
 
 
+sstop <- function( str, ... ) {
+  stop( sprintf( str, ... ), call. = FALSE )
+}
+
+
+smessage <- function( str, ... ) {
+  message( sprintf( str, ... ) )
+}
+
+
+
+swarning <- function( str, ... ) {
+  warning( sprintf( str, ... ), call. = FALSE )
+}
 

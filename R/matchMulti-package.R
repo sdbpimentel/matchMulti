@@ -63,6 +63,17 @@ NULL
 
 
 
+#' @title Mini-data set for illustration
+#' @description The Catholic schools dataset subset to a smaller number of
+#'   schools (with only 6 Catholic schools).  See full dataset documentation for
+#'   more information.
+#' @format A data frame with 1500 rows and 12 variables, as described in the
+#'   `catholic_schools` dataset.
+#'
+#' @source \url{http://somewhere.important.com/}
+"minischool"
+
+
 
 
 #' matchMulti Package
