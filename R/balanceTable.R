@@ -61,6 +61,17 @@ balanceTable.internal <- function(data,
 #' matched sample from the same data, produces a table with pre- and post-match
 #' measures of covariate balance.
 #'
+#' This table can also include p-values for tests of whether the balance is
+#' statistically significant.  These tests assume randomization at the cluster
+#' level.  We recommend looking at the standardized differences rather than
+#' p-values to assess severity of imbalance, however.
+#'
+#' The two tests, for each covariate are (1) Aggregation, where the covariates
+#' are averaged by each cluster, followed by a heteroskedastic robust t-test for
+#' a regression on the average outcomes onto treatment group and (2) cluster
+#' robust standard errors for the coefficeint of treatment on a regeresion of
+#' covariate onto treatment (and intercept).  
+#'
 #'
 #' @param df.orig a data frame containing the data before matching
 #' @param df.match an optional data frame containing the matched sample. Must
@@ -80,11 +91,10 @@ balanceTable.internal <- function(data,
 #'
 #' @return A data.frame of balance measures, with one row for each covariate in
 #'   \code{df.orig} except \code{treatment}, and columns for treated and control
-#'   means, standardized differences in means, p-values from a 2-sample t-test,
-#'   and p-values from either Fisher's exact test (if the covariate is binary)
-#'   or a Wilcoxon signed rank test otherwise.  If \code{df.match} is specified
-#'   there are twice as many columns, one set for the pre-match samples and one
-#'   set for the post-match samples.
+#'   means, standardized differences in means, p-values from two types of
+#'   regression for difference in the groups.  See description for further
+#'   details. If \code{df.match} is specified there are twice as many columns,
+#'   one set for the pre-match samples and one set for the post-match samples.
 #'
 #' @importFrom plyr aaply
 #'

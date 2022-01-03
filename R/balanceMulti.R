@@ -6,15 +6,14 @@
 #' Performs balance checking after multilevel matching.
 #'
 #' This function checks balance after multilevel balance. It checks balance on
-#' both level-one (student) and level-two (school) covariates. It reports
-#' results from both the t-test and nonparametric tests including Fisher's exact
-#' test and Wilcoxon signed rank test.
+#' both level-one (student) and level-two (school) covariates.
 #'
 #' This function returns a list which include balance checks for before and
 #' after matching for both level-one and level-two covariates. Balance
 #' statistics include treated and control means, standardized differences, which
 #' is the difference in means divided by the pooled standard deviation before
-#' matching, and p-values from parametric and nonparametric tests.
+#' matching, and p-values for mean differences. It extracts the matched data and
+#' calls `balanceTable` for student and school level covariates.
 #'
 #' @param match.obj A multilevel match object
 #' @param student.cov Names of student level covariates that you want to check
