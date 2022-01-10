@@ -97,6 +97,7 @@ NULL
 #' Maintainer:
 #' c("\\Sexpr[results=rd,stage=build]{tools:::Rd_package_maintainer(\"#1\")}",
 #' "matchMulti")\Sexpr{tools:::Rd_package_maintainer("matchMulti")}
+#' 
 #' @seealso See also \code{\link{matchMulti}}, \code{\link{matchMultisens}},
 #' \code{\link{balanceMulti}}, \code{\link{matchMultioutcome}},
 #' \code{\link{rematchSchools}}

@@ -68,10 +68,9 @@ balanceTable.internal <- function(data,
 #'
 #' The two tests, for each covariate are (1) Aggregation, where the covariates
 #' are averaged by each cluster, followed by a heteroskedastic robust t-test for
-#' a regression on the average outcomes onto treatment group and (2) cluster
-#' robust standard errors for the coefficeint of treatment on a regeresion of
-#' covariate onto treatment (and intercept).  
-#'
+#' a regression of these averages onto treatment (and intercept) and (2) cluster
+#' robust standard errors for the coefficient of treatment on a regression of
+#' covariate onto treatment (and intercept).#'
 #'
 #' @param df.orig a data frame containing the data before matching
 #' @param df.match an optional data frame containing the matched sample. Must
