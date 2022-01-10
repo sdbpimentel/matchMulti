@@ -8,6 +8,8 @@ balanceTable.internal <- function(data,
                                   include.tests = FALSE,
                                   verbose = FALSE) {
   
+  stopifnot( is.null( treat.wts ) == is.null( ctrl.wts ) )
+
   vars = setdiff(colnames(data), treatment )
   if ( !is.null( school.id ) ) {
     vars = setdiff( vars, school.id )
@@ -24,6 +26,7 @@ balanceTable.internal <- function(data,
   #TODO: figure out whether to keep weight arguments and incorporate them or
   #drop them
   
+  
   if ( include.tests ) {
     
     t.test.out <- plyr::laply(vars, agg.balance, 
@@ -35,17 +38,30 @@ balanceTable.internal <- function(data,
     rownames(t.test.out) <-  vars
     colnames(t.test.out) <- "Agg PValue"
     
-    CRVE.out <- plyr::laply(vars, CRVE.balance, 
-                            treatment = treatment, 
-                            school.id = school.id,
-                            data = data, 
-                            treat.wts = treat.wts, ctrl.wts = ctrl.wts,
-                            .drop = FALSE)
-    rownames(CRVE.out) <-  vars
-    colnames(CRVE.out) <- "CRVE PValue"
+    unifwts <- FALSE
+    if ( !is.null( treat.wts ) ) {
+      unifwts = ( max( length( treat.wts ), length( ctrl.wts ) ) == 1 ) || 
+      ( max( var( ctrl.wts ), var( treat.wts ) ) <= 0.0000001 )
+    }
     
-    out.tab <- cbind(sdiff.out, t.test.out, CRVE.out)
-    as.data.frame( out.tab )
+    out.tab <- as.data.frame( cbind( sdiff.out, t.test.out ) )
+    
+    if ( !unifwts ) {
+      out.tab$`CRVE PValue` = NA
+    } else {   
+      CRVE.out <- plyr::laply(vars, CRVE.balance, 
+                              treatment = treatment, 
+                              school.id = school.id,
+                              data = data, 
+                              treat.wts = treat.wts, ctrl.wts = ctrl.wts,
+                              .drop = FALSE)
+      rownames(CRVE.out) <-  vars
+      colnames(CRVE.out) <- "CRVE PValue"
+      
+      out.tab <- as.data.frame( cbind(out.tab, CRVE.out) )
+    }
+    out.tab
+    
   } else {
     as.data.frame( sdiff.out )
   }
@@ -67,10 +83,15 @@ balanceTable.internal <- function(data,
 #' p-values to assess severity of imbalance, however.
 #'
 #' The two tests, for each covariate are (1) Aggregation, where the covariates
-#' are averaged by each cluster, followed by a heteroskedastic robust t-test for
-#' a regression of these averages onto treatment (and intercept) and (2) cluster
-#' robust standard errors for the coefficient of treatment on a regression of
-#' covariate onto treatment (and intercept).#'
+#' are averaged by each cluster, followed by a heteroskedastic robust t-test on
+#' the coefficient of a regression of these averages onto treatment (and
+#' intercept) and (2) cluster robust standard errors for the coefficient of
+#' treatment on a regression of covariate onto treatment (and intercept).
+#'
+#' If weights are supplied, the aggregate test will aggregate using the weights,
+#' and then conduct the test (if asked for).  The CRVE test will not be
+#' conducted as accounting for weights is not yet implemented.  NAs will be
+#' returned for the CRVE P-value column in this case.
 #'
 #' @param df.orig a data frame containing the data before matching
 #' @param df.match an optional data frame containing the matched sample. Must
@@ -173,7 +194,7 @@ balanceTable <- function(df.orig, df.match = NULL,
   if ( !is.null( df.match ) ) {
     match_table = balanceTable.internal(data = cov.match,
                                      treatment = treatment, school.id = school.id, var.names = var.names, 
-                                     treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
+                                     treat.wts = mt.wts, ctrl.wts = mc.wts, 
                                      include.tests = include.tests, verbose = verbose )
     
     colnames(main_table) = paste0( "Before ", colnames(main_table) )

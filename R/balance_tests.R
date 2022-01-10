@@ -11,30 +11,36 @@ agg.balance <- function(varname, treatment, school.id,
     sstop( "Need to pass clustering/grouping variable. %s not found", school.id )  
   }
   
+  txvec = data[[treatment]]
+  
   if ( !is.null( treat.wts ) ) {
     data$.weight[ txvec != 0 ] = treat.wts 
-    data$.weight[ txvec == 0 ] == ctrl.wts
+    data$.weight[ txvec == 0 ] = ctrl.wts
   } else {
     data$.weight = 1
   }
   
-  txvec = data[[treatment]]
   school.ids = data[[school.id]]
   n_co = length( unique( school.ids[txvec==0] ) )
   n_tx = length( unique( school.ids[txvec!=0] ) )
   stopifnot( !is.na( n_co ) && !is.na( n_tx ) )
   
   
-  data <- data %>% dplyr::group_by( !!rlang::sym(treatment), !!rlang::sym(school.id) ) %>% 
+  data.agg <- data %>% dplyr::group_by( !!rlang::sym(treatment), !!rlang::sym(school.id) ) %>% 
     dplyr::summarize( mn = weighted.mean( !!rlang::sym(varname), w = .weight ),
                .weight = sum( .weight ) )
   
   
   form = paste0( "mn ~ 1 + ", treatment )
-  M0 = lm( form, data=data, weights = data$.weight )
+  M0 = lm( form, data=data.agg ) #, weights = data.agg$.weight )
   
   # est ATE (precision weighted)
   ATE_hat <- coef(M0)[[treatment]]
+  
+ # if ( sd( resid( M0 ) ) < 0.00000001 ) {
+#    browser() 
+ # }
+ # print( sd( resid( M0 ) ) )
   
   # Heteroskedastic robust SEs (clustering at site level)
   vcov_sand <- sandwich::vcovHC(M0, type = "HC1")
@@ -42,6 +48,9 @@ agg.balance <- function(varname, treatment, school.id,
   
   2 * pt( -abs( ATE_hat / SE ), df = min( n_co, n_tx ) - 1 )  
 }
+
+
+
 
 
 CRVE.balance <- function(varname, treatment, school.id, 
@@ -63,7 +72,7 @@ CRVE.balance <- function(varname, treatment, school.id,
   
   if ( !is.null( treat.wts ) ) {
     data$weight[ txvec != 0 ] = treat.wts 
-    data$weight[ txvec == 0 ] == ctrl.wts
+    data$weight[ txvec == 0 ] = ctrl.wts
   }
   
   form = paste0( "`", varname, "` ~ 1 + ", treatment )

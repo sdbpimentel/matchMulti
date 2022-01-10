@@ -65,10 +65,15 @@ level.  We recommend looking at the standardized differences rather than
 p-values to assess severity of imbalance, however.
 
 The two tests, for each covariate are (1) Aggregation, where the covariates
-are averaged by each cluster, followed by a heteroskedastic robust t-test for
-a regression of these averages onto treatment (and intercept) and (2) cluster
-robust standard errors for the coefficient of treatment on a regression of
-covariate onto treatment (and intercept).#'
+are averaged by each cluster, followed by a heteroskedastic robust t-test on
+the coefficient of a regression of these averages onto treatment (and
+intercept) and (2) cluster robust standard errors for the coefficient of
+treatment on a regression of covariate onto treatment (and intercept).
+
+If weights are supplied, the aggregate test will aggregate using the weights,
+and then conduct the test (if asked for).  The CRVE test will not be
+conducted as accounting for weights is not yet implemented.  NAs will be
+returned for the CRVE P-value column in this case.
 }
 \references{
 Rosenbaum, Paul R. (2002). \emph{Observational Studies}.

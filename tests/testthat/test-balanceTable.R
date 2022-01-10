@@ -12,8 +12,8 @@ student.cov <- c('mathach', 'minority', 'female')
 
 # Does school.fb work?
 minischool = dplyr::mutate( minischool,
-                                  size_cut = cut( size, 2 ),
-                                  discrm_cut = cut( discrm, 2 ) )
+                            size_cut = cut( size, 2 ),
+                            discrm_cut = cut( discrm, 2 ) )
 
 nrow( minischool )
 table(  minischool$sector, minischool$school  )
@@ -92,7 +92,7 @@ test_that( "balanceMulti works", {
 
 test_that( "single.table works", {
   
-  btab = balanceMulti( match.simpleA, single.table = TRUE)
+  btab = balanceMulti( match.simpleA, single.table = TRUE, include.tests = TRUE )
   btab
   
   btab2 = balanceMulti( match.simpleA, single.table = TRUE, include.tests = FALSE )
@@ -102,5 +102,54 @@ test_that( "single.table works", {
   expect_equal( dim(btab2), c( 14, 6 ) )
   
 } )
+
+
+
+
+
+#### Testing weights for balance tables #####
+
+
+
+test_that( "weights work (Basic tests)", {
+  
+  ns = table( minischool$sector )
+  ns
+  
+  bt <- expect_error( balanceTable( minischool, 
+                                    treatment = "sector",
+                                    school.id = "school",
+                                    var.names = c( student.cov, school.cov ),
+                                    treat.wts = runif( 1,5, ns[[2]] ),
+                                    include.tests = TRUE )
+  )
+  
+  bt <- balanceTable( minischool, 
+                      treatment = "sector",
+                      school.id = "school",
+                      var.names = c( student.cov, school.cov ),
+                      treat.wts = runif( ns[[2]], 1,5 ),
+                      ctrl.wts = runif( ns[[1]], 1,5 ),
+                      include.tests = TRUE )
+  
+  bt
+  expect_true( all( !is.na( bt$`Agg PValue` ) ) )
+  expect_true( all( is.na( bt$`CRVE PValue` ) ) )
+  
+  bt <- balanceTable( minischool, 
+                      treatment = "sector",
+                      school.id = "school",
+                      var.names = c( student.cov, school.cov ),
+                      treat.wts = rep( 1, ns[[2]] ),
+                      ctrl.wts = rep( 2, ns[[1]] ),
+                      include.tests = TRUE )
+  
+  bt
+  expect_true( all( !is.na( bt$`Agg PValue` ) ) )
+  expect_true( all( !is.na( bt$`CRVE PValue` ) ) )
+  
+} )
+
+
 
 
