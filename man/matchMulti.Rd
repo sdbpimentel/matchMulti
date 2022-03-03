@@ -4,22 +4,11 @@
 \alias{matchMulti}
 \title{A function that performs multilevel matching.}
 \usage{
-matchMulti(
-  data,
-  treatment,
-  school.id,
-  match.students = TRUE,
-  student.vars = NULL,
-  school.caliper = NULL,
-  school.fb = NULL,
-  verbose = FALSE,
-  keep.target = NULL,
-  student.penalty.qtile = 0.05,
-  min.keep.pctg = 0.8,
-  school.penalty = NULL,
-  save.first.stage = TRUE,
-  tol = 0.001
-)
+matchMulti(data, treatment, school.id, match.students = TRUE,
+  student.vars = NULL, school.caliper = NULL, school.fb = NULL,
+  verbose = FALSE, keep.target = NULL, student.penalty.qtile = 0.05,
+  min.keep.pctg = 0.8, school.penalty = NULL,
+  save.first.stage = TRUE, tol = 0.001)
 }
 \arguments{
 \item{data}{A data frame for use in matching.}
@@ -119,12 +108,14 @@ catholic_schools <- catholic_schools[catholic_schools$female_mean >.45 &
 #match on a single covariate
 student.cov <- c('minority')
 
-match.simple <- matchMulti(catholic_schools, treatment = 'sector',
+\dontshow{if (requireNamespace("optmatch", quietly = TRUE))} match.simple <- 
+matchMulti(catholic_schools, treatment = 'sector',
                              school.id = 'school', match.students = FALSE,
                              student.vars = student.cov, verbose=TRUE, tol=.01)
 
 #Check balance after matching - this checks both student and school balance
-balanceMulti(match.simple, student.cov = student.cov)
+\dontshow{if (requireNamespace("optmatch", quietly = TRUE))}  balanceMulti(match.simple, student.cov = student.cov)
+
 
 \dontrun{
 #larger example

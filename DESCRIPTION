@@ -2,7 +2,7 @@ Package: matchMulti
 Type: Package
 Title: Optimal Multilevel Matching using a Network Algorithm
 Version: 1.1.9
-Date: 2021-10-07
+Date: 2022-03-02
 Authors@R: c(
   person("Luke", "Keele",, "luke.keele@gmail.com", c("aut")),
   person("Luke", "Miratrix",, "luke_miratrix@gse.harvard.edu", c("aut")),
@@ -10,7 +10,16 @@ Authors@R: c(
   person("Paul", "Rosenbaum",,, c("ctb"))
   )
 Maintainer: Sam Pimentel <spi@berkeley.edu>
-Description: Performs multilevel matches for data with cluster-level treatments and individual-level outcomes using a network optimization algorithm.  Functions for checking balance at the cluster and individual levels are also provided, as are methods for permutation-inference-based outcome analysis.  Details in Pimentel et al. (2017+), forthcoming in the Annals of Applied Statistics.
+Description: Performs multilevel matches for data with cluster-
+	level treatments and individual-level outcomes using a network 
+	optimization algorithm.  Functions for checking balance at the 
+	cluster and individual levels are also provided, as are methods 
+	for permutation-inference-based outcome analysis.  Details in 
+	Pimentel et al. (2018) <10.1214/17-AOAS1118>.  The optmatch package,
+	 which is useful for running many of the provided functions, may be 
+	downloaded from Github at 
+	<https://github.com/markmfredrickson/optmatch> if not available on 
+	CRAN.
 Depends: R (>= 3.2.3)
 Imports: rcbsubset (>= 1.1.4), plyr, coin, weights, mvtnorm, MASS, Hmisc
 Suggests: optmatch, testthat, knitr

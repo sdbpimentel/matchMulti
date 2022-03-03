@@ -4,17 +4,8 @@
 \alias{matchStudents}
 \title{Compute Student Matches for all Pairs of Schools}
 \usage{
-matchStudents(
-  students,
-  treatment,
-  school.id,
-  match.students,
-  student.vars,
-  school.caliper = NULL,
-  verbose,
-  penalty.qtile,
-  min.keep.pctg
-)
+matchStudents(students, treatment, school.id, match.students, student.vars,
+  school.caliper = NULL, verbose, penalty.qtile, min.keep.pctg)
 }
 \arguments{
 \item{students}{a dataframe containing student covariates, with a different

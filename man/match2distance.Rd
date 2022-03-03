@@ -4,14 +4,8 @@
 \alias{match2distance}
 \title{Compute School Distance from a Student Match}
 \usage{
-match2distance(
-  matchFrame,
-  treatFrame,
-  ctrlFrame,
-  student.vars,
-  treatment,
-  largeval
-)
+match2distance(matchFrame, treatFrame, ctrlFrame, student.vars, treatment,
+  largeval)
 }
 \arguments{
 \item{matchFrame}{dataframe containing all matched students.}

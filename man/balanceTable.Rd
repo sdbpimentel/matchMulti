@@ -4,19 +4,10 @@
 \alias{balanceTable}
 \title{Create Balance Table}
 \usage{
-balanceTable(
-  df.orig,
-  df.match = NULL,
-  treatment,
-  school.id = NULL,
-  var.names = NULL,
-  treat.wts = NULL,
-  ctrl.wts = NULL,
-  mt.wts = NULL,
-  mc.wts = NULL,
-  include.tests = FALSE,
-  verbose = FALSE
-)
+balanceTable(df.orig, df.match = NULL, treatment, school.id = NULL,
+  var.names = NULL, treat.wts = NULL, ctrl.wts = NULL,
+  mt.wts = NULL, mc.wts = NULL, include.tests = FALSE,
+  verbose = FALSE)
 }
 \arguments{
 \item{df.orig}{a data frame containing the data before matching}

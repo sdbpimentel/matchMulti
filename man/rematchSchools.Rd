@@ -4,15 +4,8 @@
 \alias{rematchSchools}
 \title{Repeat School Match Only}
 \usage{
-rematchSchools(
-  match.out,
-  students,
-  school.fb = NULL,
-  verbose = FALSE,
-  keep.target = NULL,
-  school.penalty = NULL,
-  tol = 0.001
-)
+rematchSchools(match.out, students, school.fb = NULL, verbose = FALSE,
+  keep.target = NULL, school.penalty = NULL, tol = 0.001)
 }
 \arguments{
 \item{match.out}{an object returned by a call to \code{matchMulti}.}

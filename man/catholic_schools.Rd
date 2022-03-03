@@ -4,8 +4,7 @@
 \name{catholic_schools}
 \alias{catholic_schools}
 \title{1980 and 1982 High School and Beyond Data}
-\format{
-A \code{data.frame} with 1595 observations on the following
+\format{A \code{data.frame} with 1595 observations on the following
   variables.
 
   school: unique school level identifier
@@ -42,8 +41,7 @@ A \code{data.frame} with 1595 observations on the following
   size_large: school level indicator for schools with more than 1000 students
 
   minority_mean_large: school level indicator for schools with more than ten
-  percent minority
-}
+  percent minority}
 \source{
 Raudenbush, S. W. and Bryk, A. (2002).  \emph{Hierarchical Linear
   Models: Applications and Data Analysis Methods}.  Thousand Oaks, CA: Sage.

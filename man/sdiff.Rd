@@ -7,16 +7,8 @@
 \alias{wilc.balance}
 \title{Balance Measures}
 \usage{
-sdiff(
-  varname,
-  treatment,
-  orig.data,
-  match.data = NULL,
-  treat.wts = NULL,
-  ctrl.wts = NULL,
-  mt.wts = NULL,
-  mc.wts = NULL
-)
+sdiff(varname, treatment, orig.data, match.data = NULL,
+  treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL)
 }
 \arguments{
 \item{varname}{name of the variable on which to test balance}

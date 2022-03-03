@@ -85,12 +85,14 @@
 #' #match on a single covariate
 #' student.cov <- c('minority')
 #'
-#' match.simple <- matchMulti(catholic_schools, treatment = 'sector',
+#' \dontshow{if (requireNamespace("optmatch", quietly = TRUE))} match.simple <- 
+#' matchMulti(catholic_schools, treatment = 'sector',
 #'                              school.id = 'school', match.students = FALSE,
 #'                              student.vars = student.cov, verbose=TRUE, tol=.01)
 #'
 #' #Check balance after matching - this checks both student and school balance
-#' balanceMulti(match.simple, student.cov = student.cov)
+#' \dontshow{if (requireNamespace("optmatch", quietly = TRUE))}  balanceMulti(match.simple, student.cov = student.cov)
+#'
 #'
 #' \dontrun{
 #' #larger example

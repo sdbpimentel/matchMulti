@@ -4,7 +4,8 @@
 \alias{pe_func}
 \title{Outcome analysis.}
 \usage{
-pe_func(beta, obj, out.name = NULL, schl_id_name = NULL, treat.name = NULL)
+pe_func(beta, obj, out.name = NULL, schl_id_name = NULL,
+  treat.name = NULL)
 }
 \arguments{
 \item{beta}{Point estimate value}

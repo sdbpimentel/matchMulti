@@ -70,7 +70,7 @@ NULL
 #' @format A data frame with 1500 rows and 12 variables, as described in the
 #'   `catholic_schools` dataset.
 #'
-#' @source \url{http://somewhere.important.com/}
+#' @source See documentation page for `catholic_schools` dataset.
 "minischool"
 
 

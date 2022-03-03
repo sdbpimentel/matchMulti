@@ -4,16 +4,8 @@
 \alias{matchSchools}
 \title{Match Schools on Student-based Distance}
 \usage{
-matchSchools(
-  dmat,
-  students,
-  treatment,
-  school.id,
-  school.fb,
-  penalty,
-  verbose,
-  tol
-)
+matchSchools(dmat, students, treatment, school.id, school.fb, penalty,
+  verbose, tol)
 }
 \arguments{
 \item{dmat}{a distance matrix for schools, with a row for each treated

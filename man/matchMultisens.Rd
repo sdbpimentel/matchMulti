@@ -4,13 +4,8 @@
 \alias{matchMultisens}
 \title{Rosenbaum Bounds after Multilevel Matching}
 \usage{
-matchMultisens(
-  obj,
-  out.name = NULL,
-  schl_id_name = NULL,
-  treat.name = NULL,
-  Gamma = 1
-)
+matchMultisens(obj, out.name = NULL, schl_id_name = NULL,
+  treat.name = NULL, Gamma = 1)
 }
 \arguments{
 \item{obj}{A multilevel match object}
