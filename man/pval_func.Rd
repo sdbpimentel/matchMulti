@@ -4,8 +4,13 @@
 \alias{pval_func}
 \title{Outcome analysis.}
 \usage{
-pval_func(obj, out.name = NULL, schl_id_name = NULL,
-  treat.name = NULL, wt = TRUE)
+pval_func(
+  obj,
+  out.name = NULL,
+  schl_id_name = NULL,
+  treat.name = NULL,
+  wt = TRUE
+)
 }
 \arguments{
 \item{obj}{A multiMatch object}

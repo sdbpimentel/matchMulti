@@ -4,11 +4,22 @@
 \alias{matchMulti}
 \title{A function that performs multilevel matching.}
 \usage{
-matchMulti(data, treatment, school.id, match.students = TRUE,
-  student.vars = NULL, school.caliper = NULL, school.fb = NULL,
-  verbose = FALSE, keep.target = NULL, student.penalty.qtile = 0.05,
-  min.keep.pctg = 0.8, school.penalty = NULL,
-  save.first.stage = TRUE, tol = 0.001)
+matchMulti(
+  data,
+  treatment,
+  school.id,
+  match.students = TRUE,
+  student.vars = NULL,
+  school.caliper = NULL,
+  school.fb = NULL,
+  verbose = FALSE,
+  keep.target = NULL,
+  student.penalty.qtile = 0.05,
+  min.keep.pctg = 0.8,
+  school.penalty = NULL,
+  save.first.stage = TRUE,
+  tol = 0.001
+)
 }
 \arguments{
 \item{data}{A data frame for use in matching.}

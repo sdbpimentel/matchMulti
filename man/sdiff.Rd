@@ -7,8 +7,7 @@
 \alias{wilc.balance}
 \title{Balance Measures}
 \usage{
-sdiff(varname, treatment, orig.data, match.data = NULL,
-  treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL)
+sdiff(varname, treatment, orig.data, match.data = NULL)
 }
 \arguments{
 \item{varname}{name of the variable on which to test balance}
@@ -18,14 +17,6 @@ sdiff(varname, treatment, orig.data, match.data = NULL,
 \item{orig.data}{a data frame containing the data before matching}
 
 \item{match.data}{an optional data frame containing the matched sample}
-
-\item{treat.wts}{optional weights for treated units in the original sample}
-
-\item{ctrl.wts}{optional weights for control units in the original sample}
-
-\item{mt.wts}{optional weights for treated units in the matched sample}
-
-\item{mc.wts}{optional weights for treated units in the matched sample}
 }
 \value{
 a labeled vector.  For \code{sdiff}, the vector has six elements if

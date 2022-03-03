@@ -4,11 +4,11 @@ balanceTable.internal <- function(data,
                                   treatment, 
                                   school.id = NULL,
                                   var.names = NULL,
-                                  treat.wts = NULL, ctrl.wts = NULL, 
+                             #     treat.wts = NULL, ctrl.wts = NULL, 
                                   include.tests = FALSE,
                                   verbose = FALSE) {
   
-  stopifnot( is.null( treat.wts ) == is.null( ctrl.wts ) )
+# stopifnot( is.null( treat.wts ) == is.null( ctrl.wts ) )
 
   vars = setdiff(colnames(data), treatment )
   if ( !is.null( school.id ) ) {
@@ -18,7 +18,7 @@ balanceTable.internal <- function(data,
   sdiff.out <- plyr::laply(vars, sdiff, 
                            treatment = treatment, 
                            orig.data = data, 
-                           treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
+                         #  treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
                            .drop = FALSE)
   rownames(sdiff.out) <- vars
   
@@ -33,27 +33,21 @@ balanceTable.internal <- function(data,
                               treatment = treatment, 
                               school.id = school.id,
                               data = data, 
-                              treat.wts = treat.wts, ctrl.wts = ctrl.wts,
                               .drop = FALSE)
     rownames(t.test.out) <-  vars
     colnames(t.test.out) <- "Agg PValue"
     
-    unifwts <- FALSE
-    if ( !is.null( treat.wts ) ) {
-      unifwts = ( max( length( treat.wts ), length( ctrl.wts ) ) == 1 ) || 
-      ( max( var( ctrl.wts ), var( treat.wts ) ) <= 0.0000001 )
-    }
     
     out.tab <- as.data.frame( cbind( sdiff.out, t.test.out ) )
     
-    if ( !unifwts ) {
-      out.tab$`CRVE PValue` = NA
-    } else {   
+    #if ( !unifwts ) {
+    #  out.tab$`CRVE PValue` = NA
+    #} else {   
+    if ( TRUE ) {
       CRVE.out <- plyr::laply(vars, CRVE.balance, 
                               treatment = treatment, 
                               school.id = school.id,
                               data = data, 
-                              treat.wts = treat.wts, ctrl.wts = ctrl.wts,
                               .drop = FALSE)
       rownames(CRVE.out) <-  vars
       colnames(CRVE.out) <- "CRVE PValue"
@@ -88,11 +82,6 @@ balanceTable.internal <- function(data,
 #' intercept) and (2) cluster robust standard errors for the coefficient of
 #' treatment on a regression of covariate onto treatment (and intercept).
 #'
-#' If weights are supplied, the aggregate test will aggregate using the weights,
-#' and then conduct the test (if asked for).  The CRVE test will not be
-#' conducted as accounting for weights is not yet implemented.  NAs will be
-#' returned for the CRVE P-value column in this case.
-#'
 #' @param df.orig a data frame containing the data before matching
 #' @param df.match an optional data frame containing the matched sample. Must
 #'   have all variable names to be balanced.
@@ -101,10 +90,6 @@ balanceTable.internal <- function(data,
 #'   p-values for balance statistics are desired.
 #' @param var.names List of variable names to calculate balance for.  If NULL,
 #'   use all variables found in the df.orig data.frame.
-#' @param treat.wts optional weights for treated units in the original sample
-#' @param ctrl.wts optional weights for control units in the original sample
-#' @param mt.wts optional weights for treated units in the matched sample
-#' @param mc.wts optional weights for treated units in the matched sample
 #' @param verbose a logical value indicating whether detailed output should be
 #'   printed.
 #' @param include.tests Include tests of imbalance on covariates (TRUE/FALSE).
@@ -117,7 +102,13 @@ balanceTable.internal <- function(data,
 #'   one set for the pre-match samples and one set for the post-match samples.
 #'
 #' @importFrom plyr aaply
-#'
+#' @importFrom sandwich vcovHC vcovCL
+#' @importFrom dplyr group_by summarize
+#' @importFrom rlang sym
+#' @importFrom stats coef lm pt weighted.mean
+#' @importFrom tidyr `%>%`
+#' @importFrom rlang .data
+#' 
 #' @references Rosenbaum, Paul R. (2002). \emph{Observational Studies}.
 #'   Springer-Verlag.
 #'
@@ -129,9 +120,6 @@ balanceTable <- function(df.orig, df.match = NULL,
                          treatment, 
                          school.id = NULL,
                          var.names = NULL,
-                         #cat.vars = NULL,
-                         treat.wts = NULL, ctrl.wts = NULL, 
-                         mt.wts = NULL, mc.wts = NULL, 
                          include.tests = FALSE,
                          verbose = FALSE){
   #if(is.null(cat.vars)) cat.vars <- rep(FALSE, ncol(df.orig))
@@ -187,14 +175,12 @@ balanceTable <- function(df.orig, df.match = NULL,
   
   main_table = balanceTable.internal(data = cov.orig,
                                      treatment = treatment, school.id = school.id, var.names = var.names, 
-                                     treat.wts = treat.wts, ctrl.wts = ctrl.wts, 
                                      include.tests = include.tests, verbose = verbose )
   
   # Add in match balance if present.
   if ( !is.null( df.match ) ) {
     match_table = balanceTable.internal(data = cov.match,
                                      treatment = treatment, school.id = school.id, var.names = var.names, 
-                                     treat.wts = mt.wts, ctrl.wts = mc.wts, 
                                      include.tests = include.tests, verbose = verbose )
     
     colnames(main_table) = paste0( "Before ", colnames(main_table) )

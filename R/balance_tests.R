@@ -14,6 +14,7 @@ agg.balance <- function(varname, treatment, school.id,
   txvec = data[[treatment]]
   
   if ( !is.null( treat.wts ) ) {
+    warning( "Weights not fully implemented for aggregate balance check" )
     data$.weight[ txvec != 0 ] = treat.wts 
     data$.weight[ txvec == 0 ] = ctrl.wts
   } else {
@@ -27,8 +28,8 @@ agg.balance <- function(varname, treatment, school.id,
   
   
   data.agg <- data %>% dplyr::group_by( !!rlang::sym(treatment), !!rlang::sym(school.id) ) %>% 
-    dplyr::summarize( mn = weighted.mean( !!rlang::sym(varname), w = .weight ),
-               .weight = sum( .weight ) )
+    dplyr::summarize( mn = weighted.mean( !!rlang::sym(varname), w = .data$.weight ),
+               .weight = sum( .data$.weight ) )
   
   
   form = paste0( "mn ~ 1 + ", treatment )

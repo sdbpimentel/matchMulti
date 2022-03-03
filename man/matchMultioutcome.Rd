@@ -4,8 +4,14 @@
 \alias{matchMultioutcome}
 \title{Performs an outcome analysis after multilevel matching.}
 \usage{
-matchMultioutcome(obj, out.name = NULL, schl_id_name = NULL,
-  treat.name = NULL, end.1 = -1000, end.2 = 1000)
+matchMultioutcome(
+  obj,
+  out.name = NULL,
+  schl_id_name = NULL,
+  treat.name = NULL,
+  end.1 = -1000,
+  end.2 = 1000
+)
 }
 \arguments{
 \item{obj}{A multilevel match object.}

@@ -31,7 +31,7 @@ Conducts optimal subset matching as described in the reference.
 \details{
 \code{pairmatchelastic} is the main function, which conducts an entire match.
 \code{elastic} is a helper function which augments the original distance
-matrix as described in the reference.
+matrix as described in the reference. 
 
 The original versions of these functions were written by Paul Rosenbaum and
 distributed in the supplemental material to the paper: "Optimal Matching of

@@ -17,11 +17,9 @@ is.matchMultiResult(x)
 \item{x}{a matchMultiResult object (except for is.matchMultiResult, where it is a generic
 object to check).}
 
-\item{...}{No extra options passed.}
+\item{...}{Extra options passed to print.matchMultiResult}
 
 \item{object}{Object to summarize.}
-
-\item{...}{Extra options passed to print.matchMultiResult}
 }
 \value{
 is.matchMultiResult: TRUE if object is a matchMultiResult object.

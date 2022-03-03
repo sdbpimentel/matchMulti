@@ -1,2 +1,5 @@
-^.*\.Rproj$
+miratrixScratch/
+^miratrixScratch$
+^data-raw$
+^matchMulti\.Rproj$
 ^\.Rproj\.user$

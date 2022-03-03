@@ -4,8 +4,13 @@
 \alias{balanceMulti}
 \title{Performs balance checking after multilevel matching.}
 \usage{
-balanceMulti(match.obj, student.cov = NULL, school.cov = NULL,
-  include.tests = TRUE, single.table = FALSE)
+balanceMulti(
+  match.obj,
+  student.cov = NULL,
+  school.cov = NULL,
+  include.tests = TRUE,
+  single.table = FALSE
+)
 }
 \arguments{
 \item{match.obj}{A multilevel match object}

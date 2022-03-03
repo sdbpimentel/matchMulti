@@ -4,8 +4,15 @@
 \alias{ci_func}
 \title{Outcome analysis.}
 \usage{
-ci_func(beta, obj, out.name = NULL, schl_id_name = NULL,
-  treat.name = NULL, alpha, alternative = "less")
+ci_func(
+  beta,
+  obj,
+  out.name = NULL,
+  schl_id_name = NULL,
+  treat.name = NULL,
+  alpha,
+  alternative = "less"
+)
 }
 \arguments{
 \item{beta}{Confidence interval value}

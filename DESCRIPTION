@@ -20,8 +20,8 @@ Description: Performs multilevel matches for data with cluster-
 	downloaded from Github at 
 	<https://github.com/markmfredrickson/optmatch> if not available on 
 	CRAN.
-Depends: R (>= 3.2.3)
-Imports: rcbsubset (>= 1.1.4), plyr, coin, weights, mvtnorm, MASS, Hmisc
+Depends: R (>= 3.2.3), tidyr, rlang, dplyr
+Imports: rcbsubset (>= 1.1.4), plyr, coin, weights, mvtnorm, MASS, Hmisc, sandwich
 Suggests: optmatch, testthat, knitr
 License: MIT + file LICENSE
 VignetteBuilder: knitr

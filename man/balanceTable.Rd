@@ -4,10 +4,15 @@
 \alias{balanceTable}
 \title{Create Balance Table}
 \usage{
-balanceTable(df.orig, df.match = NULL, treatment, school.id = NULL,
-  var.names = NULL, treat.wts = NULL, ctrl.wts = NULL,
-  mt.wts = NULL, mc.wts = NULL, include.tests = FALSE,
-  verbose = FALSE)
+balanceTable(
+  df.orig,
+  df.match = NULL,
+  treatment,
+  school.id = NULL,
+  var.names = NULL,
+  include.tests = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{df.orig}{a data frame containing the data before matching}
@@ -22,14 +27,6 @@ p-values for balance statistics are desired.}
 
 \item{var.names}{List of variable names to calculate balance for.  If NULL,
 use all variables found in the df.orig data.frame.}
-
-\item{treat.wts}{optional weights for treated units in the original sample}
-
-\item{ctrl.wts}{optional weights for control units in the original sample}
-
-\item{mt.wts}{optional weights for treated units in the matched sample}
-
-\item{mc.wts}{optional weights for treated units in the matched sample}
 
 \item{include.tests}{Include tests of imbalance on covariates (TRUE/FALSE).}
 
@@ -60,11 +57,6 @@ are averaged by each cluster, followed by a heteroskedastic robust t-test on
 the coefficient of a regression of these averages onto treatment (and
 intercept) and (2) cluster robust standard errors for the coefficient of
 treatment on a regression of covariate onto treatment (and intercept).
-
-If weights are supplied, the aggregate test will aggregate using the weights,
-and then conduct the test (if asked for).  The CRVE test will not be
-conducted as accounting for weights is not yet implemented.  NAs will be
-returned for the CRVE P-value column in this case.
 }
 \references{
 Rosenbaum, Paul R. (2002). \emph{Observational Studies}.

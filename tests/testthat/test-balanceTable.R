@@ -70,6 +70,7 @@ expect_true( all( fakedbl$`After Agg PValue` == fakedbl$`Before Agg PValue` ))
 ##### Now do matching and check balance ######
 
 if (requireNamespace("optmatch", quietly = TRUE)){
+  
   match.simpleA <- matchMulti(minischool, treatment = 'sector',
                               school.id = 'school', match.students = FALSE,
                               school.fb = school.fb )
@@ -111,44 +112,44 @@ if (requireNamespace("optmatch", quietly = TRUE)){
 
 
 
-test_that( "weights work (Basic tests)", {
-  
-  ns = table( minischool$sector )
-  ns
-  
-  bt <- expect_error( balanceTable( minischool, 
-                                    treatment = "sector",
-                                    school.id = "school",
-                                    var.names = c( student.cov, school.cov ),
-                                    treat.wts = runif( 1,5, ns[[2]] ),
-                                    include.tests = TRUE )
-  )
-  
-  bt <- balanceTable( minischool, 
-                      treatment = "sector",
-                      school.id = "school",
-                      var.names = c( student.cov, school.cov ),
-                      treat.wts = runif( ns[[2]], 1,5 ),
-                      ctrl.wts = runif( ns[[1]], 1,5 ),
-                      include.tests = TRUE )
-  
-  bt
-  expect_true( all( !is.na( bt$`Agg PValue` ) ) )
-  expect_true( all( is.na( bt$`CRVE PValue` ) ) )
-  
-  bt <- balanceTable( minischool, 
-                      treatment = "sector",
-                      school.id = "school",
-                      var.names = c( student.cov, school.cov ),
-                      treat.wts = rep( 1, ns[[2]] ),
-                      ctrl.wts = rep( 2, ns[[1]] ),
-                      include.tests = TRUE )
-  
-  bt
-  expect_true( all( !is.na( bt$`Agg PValue` ) ) )
-  expect_true( all( !is.na( bt$`CRVE PValue` ) ) )
-  
-} )
+# test_that( "weights work (Basic tests)", {
+#   
+#   ns = table( minischool$sector )
+#   ns
+#   
+#   bt <- expect_error( balanceTable( minischool, 
+#                                     treatment = "sector",
+#                                     school.id = "school",
+#                                     var.names = c( student.cov, school.cov ),
+#                                     treat.wts = runif( 1,5, ns[[2]] ),
+#                                     include.tests = TRUE )
+#   )
+#   
+#   bt <- balanceTable( minischool, 
+#                       treatment = "sector",
+#                       school.id = "school",
+#                       var.names = c( student.cov, school.cov ),
+#                       treat.wts = runif( ns[[2]], 1,5 ),
+#                       ctrl.wts = runif( ns[[1]], 1,5 ),
+#                       include.tests = TRUE )
+#   
+#   bt
+#   expect_true( all( !is.na( bt$`Agg PValue` ) ) )
+#   expect_true( all( is.na( bt$`CRVE PValue` ) ) )
+#   
+#   bt <- balanceTable( minischool, 
+#                       treatment = "sector",
+#                       school.id = "school",
+#                       var.names = c( student.cov, school.cov ),
+#                       treat.wts = rep( 1, ns[[2]] ),
+#                       ctrl.wts = rep( 2, ns[[1]] ),
+#                       include.tests = TRUE )
+#   
+#   bt
+#   expect_true( all( !is.na( bt$`Agg PValue` ) ) )
+#   expect_true( all( !is.na( bt$`CRVE PValue` ) ) )
+#   
+# } )
 
 
 

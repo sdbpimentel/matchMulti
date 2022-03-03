@@ -82,13 +82,8 @@ elastic <- function (mdist, n = 0, val = 0) {
 
 
 
-fisher.balance <-
-function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
-	if(is.null(treat.wts)) treat.wts = rep(1, sum(orig.data[[treatment]]))
-	if(is.null(ctrl.wts)) ctrl.wts = rep(1, sum(orig.data[[treatment]] == 0))	
+fisher.balance <- function(varname, treatment, orig.data, match.data = NULL){
 		
-	treat.wts <- treat.wts/sum(treat.wts)*length(treat.wts)
-	ctrl.wts <- ctrl.wts/sum(ctrl.wts)*length(ctrl.wts)
 	orig.v <- orig.data[,which(colnames(orig.data) == varname)]
 	
 	tab.orig <- table(orig.v, orig.data[[treatment]])
@@ -100,10 +95,6 @@ function(varname, treatment, orig.data, match.data = NULL, treat.wts = NULL, ctr
 	
 	if(is.null(match.data)) return(c('Fisher Test Pvalue' = t.orig$p.value))
 
-	if(is.null(mc.wts)) mc.wts = rep(1, sum(match.data[[treatment]] == 0))
-	if(is.null(mt.wts)) mt.wts = rep(1, sum(match.data[[treatment]] == 1))
-	mt.wts <- mt.wts/sum(mt.wts)*length(mt.wts)
-	mc.wts <- mc.wts/sum(mc.wts)*length(mc.wts)
 	match.v  <- match.data[,which(colnames(match.data) == varname)]	
 	
 	tab.match <- table(match.v, match.data[[treatment]])
@@ -519,10 +510,6 @@ function(df1, df2){
 #' @param treatment name of the binary indicator for treatment status
 #' @param orig.data a data frame containing the data before matching
 #' @param match.data an optional data frame containing the matched sample
-#' @param treat.wts optional weights for treated units in the original sample
-#' @param ctrl.wts optional weights for control units in the original sample
-#' @param mt.wts optional weights for treated units in the matched sample
-#' @param mc.wts optional weights for treated units in the matched sample
 #'
 #' @return a labeled vector.  For \code{sdiff}, the vector has six elements if
 #'   \code{match.data} is provided: treated and control means and standardized
@@ -533,8 +520,6 @@ function(df1, df2){
 #'   For the other functions, if \code{match.data} is provided, the vector
 #'   contains p-values for the test before and after matching. Otherwise a
 #'   single p-value is given for the pre-match data.
-#'
-#' @importFrom weights wtd.t.test
 #' 
 #' @author Luke Keele, Penn State University, \email{ljk20@@psu.edu}
 #'
@@ -545,36 +530,26 @@ function(df1, df2){
 #'   Rosenbaum, Paul R. (2010). \emph{Design of Observational Studies}.
 #'   Springer-Verlag.
 #' @keywords internal
-#' @importFrom Hmisc wtd.var
 #' @export sdiff
 sdiff <-
-function(varname, treatment, orig.data, match.data = NULL, 
-         treat.wts = NULL, ctrl.wts = NULL, mt.wts = NULL, mc.wts = NULL){
-	if(is.null(treat.wts)) treat.wts = rep(1, sum(orig.data[[treatment]]))
-	if(is.null(ctrl.wts)) ctrl.wts = rep(1, sum(orig.data[[treatment]] == 0))	
+function(varname, treatment, orig.data, match.data = NULL) {
 		
-	treat.wts <- treat.wts/sum(treat.wts)*length(treat.wts)
-	ctrl.wts <- ctrl.wts/sum(ctrl.wts)*length(ctrl.wts)
 	orig.v <- orig.data[,which(colnames(orig.data) == varname)]
-	m1 <- mean(treat.wts*orig.v[orig.data[[treatment]] == 1], na.rm = TRUE)
-	m0 <- mean(ctrl.wts*orig.v[orig.data[[treatment]] == 0], na.rm = TRUE)
+	m1 <- mean(orig.v[orig.data[[treatment]] == 1], na.rm = TRUE)
+	m0 <- mean(orig.v[orig.data[[treatment]] == 0], na.rm = TRUE)
 	
-	s1 <- sqrt(wtd.var(orig.v[orig.data[[treatment]] == 1], weights=treat.wts, na.rm= TRUE))
+	s1 <- sqrt(var(orig.v[orig.data[[treatment]] == 1], na.rm= TRUE))
 	if(length(orig.v[orig.data[[treatment]] == 1]) == 1) s1 <- 0
-	s0 <- sqrt(wtd.var(orig.v[orig.data[[treatment]] == 0], weights=ctrl.wts, na.rm = TRUE))
+	s0 <- sqrt(var(orig.v[orig.data[[treatment]] == 0], na.rm = TRUE))
 	if(length(orig.v[orig.data[[treatment]] == 0]) == 1) s0 <- 0
 	sdiff.before <- (m1 -m0)/sqrt(0.5*(s1^2 + s0^2))
 	if(s1 == 0 && s0 == 0) sdiff.before <- ifelse(m1 == m0, 0, Inf)
 	if(is.null(match.data)) return(c('Treated Mean' = m1, 'Control Mean' = m0,'SDiff' = sdiff.before))
 		
 	#if match data is also provided
-	if(is.null(mc.wts)) mc.wts = rep(1, sum(match.data[[treatment]] == 0))
-	if(is.null(mt.wts)) mt.wts = rep(1, sum(match.data[[treatment]] == 1))
-	mt.wts <- mt.wts/sum(mt.wts)*length(mt.wts)
-	mc.wts <- mc.wts/sum(mc.wts)*length(mc.wts)
 	match.v  <- match.data[,which(colnames(match.data) == varname)]
-	m1.m <- mean(mt.wts*match.v[match.data[[treatment]] == 1], na.rm= TRUE)
-	m0.m <- mean(mc.wts*match.v[match.data[[treatment]] == 0], na.rm = TRUE)	
+	m1.m <- mean(match.v[match.data[[treatment]] == 1], na.rm= TRUE)
+	m0.m <- mean(match.v[match.data[[treatment]] == 0], na.rm = TRUE)	
 
 	sdiff.after <- (m1.m - m0.m)/sqrt(0.5*(s1^2 + s0^2))
 	if(s1 == 0 && s0 == 0) sdiff.after <- ifelse(m1.m == m0.m, 0, Inf)
