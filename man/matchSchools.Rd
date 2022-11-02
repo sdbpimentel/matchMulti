@@ -60,8 +60,8 @@ interaction in the second element, and so on.  As such variables should be
 added in order of priority for balance.
 }
 \author{
-Luke Keele, Penn State University, \email{ljk20@psu.edu}
+Luke Keele, University of Pennsylvania, \email{luke.keele@gmail.com}
 
-Sam Pimentel, University of Pennsylvania, \email{spi@wharton.upenn.edu}
+  Sam Pimentel, University of California, Berkeley, \email{spi@berkeley.edu}
 }
 \keyword{internal}
