@@ -12,7 +12,8 @@ matchSchools(
   school.fb,
   penalty,
   verbose,
-  tol
+  tol,
+  solver = "rlemon"
 )
 }
 \arguments{
@@ -43,6 +44,11 @@ printed.}
 \item{tol}{a numeric tolerance value for comparing distances.  It may need
 to be raised above the default when matching with many levels of refined
 balance.}
+
+\item{solver}{Name of package used to solve underlying network flow problem, 
+one of 'rlemon' and 'rrelaxiv'.  rrelaxiv carries an 
+academic license and is not hosted on CRAN so it must be installed 
+separately.}
 }
 \value{
 a dataframe with two columns, one containing treated school IDs and
@@ -60,8 +66,8 @@ interaction in the second element, and so on.  As such variables should be
 added in order of priority for balance.
 }
 \author{
-Luke Keele, University of Pennsylvania, \email{luke.keele@gmail.com}
+Luke Keele, Penn State University, \email{ljk20@psu.edu}
 
-  Sam Pimentel, University of California, Berkeley, \email{spi@berkeley.edu}
+Sam Pimentel, University of Pennsylvania, \email{spi@wharton.upenn.edu}
 }
 \keyword{internal}

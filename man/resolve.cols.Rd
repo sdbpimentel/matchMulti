@@ -20,9 +20,8 @@ but not in the first frame, a new column of zeroes is added to the first
 frame.
 }
 \author{
-Luke Keele, University of Pennsylvania, \email{luke.keele@gmail.com}
+Luke Keele, Penn State University, \email{ljk20@psu.edu}
 
-  Sam Pimentel, University of California, Berkeley, \email{spi@berkeley.edu}
+Sam Pimentel, University of Pennsylvania, \email{spi@wharton.upenn.edu}
 }
-
 \keyword{internal}
