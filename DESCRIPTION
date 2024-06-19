@@ -1,8 +1,8 @@
 Package: matchMulti
 Type: Package
 Title: Optimal Multilevel Matching using a Network Algorithm
-Version: 1.1.12
-Date: 2023-5-10
+Version: 1.1.13
+Date: 2024-6-19
 Authors@R: c(
   person("Luke", "Keele",, "luke.keele@gmail.com", c("aut")),
   person("Luke", "Miratrix",, "luke_miratrix@gse.harvard.edu", c("aut")),
@@ -20,7 +20,7 @@ Description: Performs multilevel matches for data with cluster-
 	functions, may be downloaded from Github at 
 	<https://github.com/markmfredrickson/optmatch> if not available on 
 	CRAN.
-Depends: R (>= 3.2.3), rlang, dplyr
+Depends: R (>= 4.3.0), rlang, dplyr
 Imports: rcbsubset (>= 1.1.4), plyr, coin, weights, mvtnorm, MASS, sandwich, magrittr
 Suggests: optmatch, testthat, knitr, rrelaxiv
 Additional_repositories: https://errickson.net/rrelaxiv/
