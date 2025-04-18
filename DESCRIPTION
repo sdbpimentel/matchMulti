@@ -1,8 +1,8 @@
 Package: matchMulti
 Type: Package
 Title: Optimal Multilevel Matching using a Network Algorithm
-Version: 1.1.13
-Date: 2024-6-19
+Version: 1.1.14
+Date: 2025-4-17
 Authors@R: c(
   person("Luke", "Keele",, "luke.keele@gmail.com", c("aut")),
   person("Luke", "Miratrix",, "luke_miratrix@gse.harvard.edu", c("aut")),
